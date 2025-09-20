@@ -93,48 +93,43 @@
 
             <!-- Şirket Bilgileri -->
             <div id="companyInfoSection">
-                <h3 class="text-base font-semibold text-gray-700 mb-3">Kurum ve Kişisel Bilgiler</h3>
-                
-                <div class="mb-3">
-                    <input type="text" id="companyName" placeholder="Kurum adınızı girin (Okul, Üniversite vb.)" 
-                           class="w-full border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                </div>
-                
-                <div class="mb-3">
-                    <p class="text-xs text-gray-600 mb-2">Rolünüzü seçin:</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="selectJobType('Öğrenci')" id="studentBtn" 
-                                class="job-btn py-3 px-2 text-xs rounded border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-blue-400">
-                            <div class="text-lg mb-1">🎓</div>
-                            <div>Öğrenci</div>
-                        </button>
-                        <button type="button" onclick="selectJobType('Öğretmen')" id="teacherBtn" 
-                                class="job-btn py-3 px-2 text-xs rounded border-2 border-green-300 hover:border-green-500 hover:bg-green-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-green-400">
-                            <div class="text-lg mb-1">👨‍🏫</div>
-                            <div>Öğretmen</div>
-                        </button>
-                        <button type="button" onclick="selectJobType('Veli/Ebeveyn')" id="parentBtn" 
-                                class="job-btn py-3 px-2 text-xs rounded border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400">
-                            <div class="text-lg mb-1">👨‍👩‍👧‍👦</div>
-                            <div>Veli/Ebeveyn</div>
-                        </button>
+                <div class="flex flex-col items-center justify-center gap-4 p-2 sm:p-6">
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">Kurum ve Kişisel Bilgiler</h3>
+                    <div class="w-full max-w-xs sm:max-w-md mx-auto">
+                        <input type="text" id="companyName" placeholder="Kurum adınızı girin (Okul, Üniversite vb.)" 
+                            class="w-full border-2 border-purple-300 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm mb-3">
                     </div>
+                    <div class="w-full max-w-xs sm:max-w-md mx-auto">
+                        <p class="text-xs text-gray-600 mb-2 font-medium">Rolünüzü seçin:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <button type="button" onclick="selectJobType('Öğrenci')" id="studentBtn" 
+                                class="job-btn flex flex-col items-center py-4 px-2 text-base rounded-xl border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer font-semibold bg-white text-center focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm">
+                                <div class="text-2xl mb-1">🎓</div>
+                                <div>Öğrenci</div>
+                            </button>
+                            <button type="button" onclick="selectJobType('Öğretmen')" id="teacherBtn" 
+                                class="job-btn flex flex-col items-center py-4 px-2 text-base rounded-xl border-2 border-green-300 hover:border-green-500 hover:bg-green-50 transition-all duration-200 cursor-pointer font-semibold bg-white text-center focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm">
+                                <div class="text-2xl mb-1">👨‍🏫</div>
+                                <div>Öğretmen</div>
+                            </button>
+                            <button type="button" onclick="selectJobType('Veli/Ebeveyn')" id="parentBtn" 
+                                class="job-btn flex flex-col items-center py-4 px-2 text-base rounded-xl border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 cursor-pointer font-semibold bg-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-sm">
+                                <div class="text-2xl mb-1">👨‍👩‍👧‍👦</div>
+                                <div>Veli/Ebeveyn</div>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="selectedJobDisplay" class="text-center text-base text-blue-600 font-semibold min-h-[24px] mb-2"></div>
+                    <div class="w-full max-w-xs sm:max-w-md mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <input type="text" id="firstName" placeholder="Adınız (İsteğe bağlı)" 
+                            class="border-2 border-gray-300 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm">
+                        <input type="text" id="lastName" placeholder="Soyadınız (İsteğe bağlı)" 
+                            class="border-2 border-gray-300 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm">
+                    </div>
+                    <button id="startSurvey" class="w-full max-w-xs sm:max-w-md mx-auto py-4 rounded-xl text-white font-bold gradient-bg hover:opacity-90 transition-opacity text-lg shadow-lg">
+                        📊 Anketi Başlat
+                    </button>
                 </div>
-                
-                <div id="selectedJobDisplay" class="text-center text-sm text-gray-600 mb-3 min-h-[20px]">
-                    <!-- Seçilen rol burada gösterilecek -->
-                </div>
-                
-                <div class="grid grid-cols-2 gap-2 mb-4">
-                    <input type="text" id="firstName" placeholder="Adınız (İsteğe bağlı)" 
-                           class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                    <input type="text" id="lastName" placeholder="Soyadınız (İsteğe bağlı)" 
-                           class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                </div>
-                
-                <button id="startSurvey" class="w-full py-3 rounded text-white font-semibold gradient-bg hover:opacity-90 transition-opacity text-sm">
-                    📊 Anketi Başlat
-                </button>
             </div>
 
             <!-- Anket Alanı -->
@@ -751,13 +746,11 @@
         function showSubmitButton() {
             clearInterval(timerInterval);
             document.getElementById('questionContainer').innerHTML = `
-                <div class="text-center bg-green-50 p-10 rounded-lg border-2 border-green-200">
-                    <div class="text-8xl mb-6">🎉</div>
-                    <h3 class="text-2xl font-semibold text-green-800 mb-4">Tebrikler!</h3>
-                    <p class="text-green-700 mb-6 text-lg">Tüm soruları yanıtladınız. Anketi tamamlamak için aşağıdaki butona tıklayın.</p>
-                    <div class="text-base text-green-600">
-                        <p>Toplam süre: ${document.getElementById('timeElapsed').textContent.split(': ')[1]}</p>
-                    </div>
+                <div class="flex flex-col items-center justify-center bg-gradient-to-br from-green-100 to-green-50 p-8 sm:p-12 rounded-2xl border-2 border-green-300 shadow-xl">
+                    <div class="text-7xl sm:text-8xl mb-4 animate-bounce">🎉</div>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-green-800 mb-2 text-center">Tebrikler!</h3>
+                    <p class="text-green-700 mb-4 text-lg sm:text-xl text-center font-medium">Tüm soruları yanıtladınız.<br>Anketi tamamlamak için aşağıdaki butona tıklayın.</p>
+                    <div class="text-base text-green-700 font-semibold mb-2">Toplam süre: ${document.getElementById('timeElapsed').textContent.split(': ')[1]}</div>
                 </div>
             `;
             document.getElementById('submitSurvey').classList.remove('hidden');
