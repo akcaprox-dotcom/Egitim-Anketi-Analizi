@@ -695,28 +695,28 @@
             const question = currentQuestions[currentQuestionIndex];
             
             container.innerHTML = `
-                <div class="bg-gray-50 p-8 rounded-lg border-l-4 border-purple-500">
-                    <h3 class="text-xl font-semibold mb-6">${question}</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <button onclick="selectAnswer(1)" class="answer-btn py-4 px-3 text-base rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all duration-200 text-center">
-                            <div class="text-2xl mb-2">😞</div>
-                            <div class="text-sm font-medium">Hiç Memnun Değilim</div>
+                <div class="bg-white p-3 sm:p-6 rounded-2xl border border-purple-200 shadow-md">
+                    <h3 class="text-base sm:text-lg font-semibold mb-4 text-gray-800">${question}</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 w-full">
+                        <button onclick="selectAnswer(1)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 bg-gray-50 shadow-sm">
+                            <span class="text-xl sm:text-2xl mb-1">😞</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Hiç Memnun<br>Değilim</span>
                         </button>
-                        <button onclick="selectAnswer(2)" class="answer-btn py-4 px-3 text-base rounded-lg border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 text-center">
-                            <div class="text-2xl mb-2">😐</div>
-                            <div class="text-sm font-medium">Memnun Değilim</div>
+                        <button onclick="selectAnswer(2)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 shadow-sm">
+                            <span class="text-xl sm:text-2xl mb-1">😐</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Memnun<br>Değilim</span>
                         </button>
-                        <button onclick="selectAnswer(3)" class="answer-btn py-4 px-3 text-base rounded-lg border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all duration-200 text-center">
-                            <div class="text-2xl mb-2">😊</div>
-                            <div class="text-sm font-medium">Kararsızım</div>
+                        <button onclick="selectAnswer(3)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-gray-50 shadow-sm col-span-2 sm:col-span-1">
+                            <span class="text-xl sm:text-2xl mb-1">😊</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Kararsızım</span>
                         </button>
-                        <button onclick="selectAnswer(4)" class="answer-btn py-4 px-3 text-base rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200 text-center">
-                            <div class="text-2xl mb-2">😄</div>
-                            <div class="text-sm font-medium">Memnunum</div>
+                        <button onclick="selectAnswer(4)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 shadow-sm">
+                            <span class="text-xl sm:text-2xl mb-1">😄</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Memnunum</span>
                         </button>
-                        <button onclick="selectAnswer(5)" class="answer-btn py-4 px-3 text-base rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 text-center">
-                            <div class="text-2xl mb-2">🤩</div>
-                            <div class="text-sm font-medium">Çok Memnunum</div>
+                        <button onclick="selectAnswer(5)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 shadow-sm">
+                            <span class="text-xl sm:text-2xl mb-1">🤩</span>
+                            <span class="font-medium text-gray-700 leading-tight text-center">Çok Memnunum</span>
                         </button>
                     </div>
                 </div>
@@ -1555,7 +1555,7 @@
                         .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; }
                     </style>
                 </head>
-                <body>
+                <body onload="window.print()">
                     <div class="header">
                         <h1>📊 ${companyName}</h1>
                         <h2>Kurum Değerlendirme Raporu</h2>
