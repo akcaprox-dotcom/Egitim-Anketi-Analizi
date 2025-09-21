@@ -6,6 +6,10 @@
     <title>Akça Pro X - Kurum Değerlendirme Anketi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -44,8 +48,8 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <!-- Ana Navigasyon -->
-    <nav class="gradient-bg text-white p-3 shadow-lg">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
+    <nav class="gradient-bg text-white p-3 shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
             <div class="flex items-center gap-2">
                 <!-- Gizli yönetici erişimi -->
                 <div onclick="showModule('admin')" class="w-3 h-3 cursor-pointer opacity-15 hover:opacity-50 transition-opacity" title="">
@@ -66,11 +70,11 @@
     </nav>
 
     <!-- Anket Modülü -->
-    <div id="surveyModule" class="max-w-4xl mx-auto p-4">
-        <div class="bg-white shadow-xl rounded-xl max-w-xl mx-auto p-6">
+    <div id="surveyModule" class="max-w-5xl mx-auto p-2 md:p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-2xl mx-auto p-4 md:p-8">
             <div class="text-center mb-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-1">Kurum Değerlendirme Anketi</h2>
-                <p class="text-gray-600 mb-2 text-sm">Görüşleriniz bizim için değerli</p>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-1 tracking-tight">Kurum Değerlendirme Anketi</h2>
+                <p class="text-gray-600 mb-2 text-base md:text-lg">Görüşleriniz bizim için değerli</p>
                 <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">v3.0.0 - JSONBin.io Entegre</span>
             </div>
 
@@ -93,48 +97,53 @@
 
             <!-- Şirket Bilgileri -->
             <div id="companyInfoSection">
-                <div class="flex flex-col items-center justify-center gap-4 p-2 sm:p-6">
-                    <h3 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2 text-center">Kurum ve Kişisel Bilgiler</h3>
-                    <div class="w-full max-w-xs sm:max-w-md mx-auto">
-                        <input type="text" id="companyName" placeholder="Kurum adınızı girin (Okul, Üniversite vb.)" 
-                            class="w-full border-2 border-purple-300 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm mb-3">
-                    </div>
-                    <div class="w-full max-w-xs sm:max-w-md mx-auto">
-                        <p class="text-xs text-gray-600 mb-2 font-medium">Rolünüzü seçin:</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <button type="button" onclick="selectJobType('Öğrenci')" id="studentBtn" 
-                                class="job-btn flex flex-col items-center py-4 px-2 text-base rounded-xl border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer font-semibold bg-white text-center focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm">
-                                <div class="text-2xl mb-1">🎓</div>
-                                <div>Öğrenci</div>
-                            </button>
-                            <button type="button" onclick="selectJobType('Öğretmen')" id="teacherBtn" 
-                                class="job-btn flex flex-col items-center py-4 px-2 text-base rounded-xl border-2 border-green-300 hover:border-green-500 hover:bg-green-50 transition-all duration-200 cursor-pointer font-semibold bg-white text-center focus:outline-none focus:ring-2 focus:ring-green-400 shadow-sm">
-                                <div class="text-2xl mb-1">👨‍🏫</div>
-                                <div>Öğretmen</div>
-                            </button>
-                            <button type="button" onclick="selectJobType('Veli/Ebeveyn')" id="parentBtn" 
-                                class="job-btn flex flex-col items-center py-4 px-2 text-base rounded-xl border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 cursor-pointer font-semibold bg-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400 shadow-sm">
-                                <div class="text-2xl mb-1">👨‍👩‍👧‍👦</div>
-                                <div>Veli/Ebeveyn</div>
-                            </button>
-                        </div>
-                    </div>
-                    <div id="selectedJobDisplay" class="text-center text-base text-blue-600 font-semibold min-h-[24px] mb-2"></div>
-                    <div class="w-full max-w-xs sm:max-w-md mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                        <input type="text" id="firstName" placeholder="Adınız (İsteğe bağlı)" 
-                            class="border-2 border-gray-300 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm">
-                        <input type="text" id="lastName" placeholder="Soyadınız (İsteğe bağlı)" 
-                            class="border-2 border-gray-300 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm">
-                    </div>
-                    <button id="startSurvey" class="w-full max-w-xs sm:max-w-md mx-auto py-4 rounded-xl text-white font-bold gradient-bg hover:opacity-90 transition-opacity text-lg shadow-lg">
-                        📊 Anketi Başlat
+                <h3 class="text-base font-semibold text-gray-700 mb-3">Kurum ve Kişisel Bilgiler</h3>
+                <!-- Google ile Giriş Yap butonu -->
+                <div class="mb-3 flex flex-col items-center">
+                    <button id="googleSignInBtn" type="button" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-gray-100 text-gray-700 font-semibold mb-2">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> Google ile Giriş Yap
                     </button>
+                    <div id="googleUserInfo" class="text-xs text-green-700 font-medium hidden"></div>
                 </div>
+                <div class="mb-3">
+                    <input type="text" id="companyName" placeholder="Kurum adınızı girin (Okul, Üniversite vb.)" 
+                        class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div class="mb-3">
+                    <p class="text-xs text-gray-600 mb-2">Rolünüzü seçin:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button type="button" onclick="selectJobType('Öğrenci')" id="studentBtn" 
+                            class="job-btn py-3 px-2 text-xs rounded border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            <div class="text-lg mb-1">🎓</div>
+                            <div>Öğrenci</div>
+                        </button>
+                        <button type="button" onclick="selectJobType('Öğretmen')" id="teacherBtn" 
+                            class="job-btn py-3 px-2 text-xs rounded border-2 border-green-300 hover:border-green-500 hover:bg-green-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-green-400">
+                            <div class="text-lg mb-1">👨‍🏫</div>
+                            <div>Öğretmen</div>
+                        </button>
+                        <button type="button" onclick="selectJobType('Veli/Ebeveyn')" id="parentBtn" 
+                            class="job-btn py-3 px-2 text-xs rounded border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400">
+                            <div class="text-lg mb-1">👨‍👩‍👧‍👦</div>
+                            <div>Veli/Ebeveyn</div>
+                        </button>
+                    </div>
+                </div>
+                <div id="selectedJobDisplay" class="text-center text-sm text-gray-600 mb-3 min-h-[20px]"></div>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <input type="text" id="firstName" placeholder="Adınız" 
+                        class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <input type="text" id="lastName" placeholder="Soyadınız" 
+                        class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <button id="startSurvey" class="w-full py-3 rounded text-white font-semibold gradient-bg hover:opacity-90 transition-opacity text-sm">
+                    📊 Anketi Başlat
+                </button>
             </div>
 
             <!-- Anket Alanı -->
             <div id="surveySection" class="hidden">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-2">
                     <span id="progressText" class="text-gray-600 font-medium">Anket İlerlemesi 0/50 Yanıtlandı</span>
                     <span id="timeElapsed" class="text-sm text-gray-500">Süre: 00:00</span>
                 </div>
@@ -142,7 +151,7 @@
                     <div id="progressBar" class="bg-purple-600 h-3 rounded-full transition-all duration-300" style="width:0%"></div>
                 </div>
                 <div id="questionContainer" class="space-y-6"></div>
-                <button id="submitSurvey" class="hidden w-full mt-8 py-4 rounded-lg text-white font-semibold bg-green-600 hover:bg-green-700 transition-colors text-lg">
+                <button id="submitSurvey" class="hidden w-full mt-8 py-4 rounded-xl text-white font-semibold bg-green-600 hover:bg-green-700 transition-colors text-lg">
                     ✅ Anketi Tamamla
                 </button>
             </div>
@@ -195,11 +204,16 @@
                 </div>
 
                 <div class="bg-white border rounded-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-semibold">Anket Sonuçları</h3>
-                        <button onclick="showPDFReport()" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold">
-                            📄 PDF Göster
-                        </button>
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-2">
+                        <h3 class="text-xl font-semibold mb-2 md:mb-0">Anket Sonuçları</h3>
+                        <div class="flex flex-col md:flex-row gap-2 items-center">
+                            <input type="date" id="reportStartDate" class="border rounded px-2 py-1 text-sm" />
+                            <span class="mx-1">-</span>
+                            <input type="date" id="reportEndDate" class="border rounded px-2 py-1 text-sm" />
+                            <button onclick="filterByDateRange()" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">Tarihe Göre Rapor</button>
+                            <button onclick="showPDFReport(true)" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">📄 PDF Göster (Filtreli)</button>
+                            <button onclick="showPDFReport(false)" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">📄 PDF Göster (Tümü)</button>
+                        </div>
                     </div>
                     
                     <!-- Grafikler Bölümü -->
@@ -336,6 +350,44 @@
     </div>
 
     <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
+            authDomain: "akcaprox-anket.firebaseapp.com",
+            projectId: "akcaprox-anket",
+            storageBucket: "akcaprox-anket.appspot.com",
+            messagingSenderId: "426135179922",
+            appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b",
+            measurementId: "G-CD1ET7RGX1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Google Sign-In logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const googleBtn = document.getElementById('googleSignInBtn');
+            const userInfoDiv = document.getElementById('googleUserInfo');
+            if (googleBtn) {
+                googleBtn.addEventListener('click', function() {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    auth.signInWithPopup(provider)
+                        .then((result) => {
+                            const user = result.user;
+                            if (user) {
+                                document.getElementById('firstName').value = user.displayName ? user.displayName.split(' ')[0] : '';
+                                document.getElementById('lastName').value = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
+                                userInfoDiv.textContent = `Giriş yapıldı: ${user.displayName} (${user.email})`;
+                                userInfoDiv.classList.remove('hidden');
+                                document.getElementById('firstName').readOnly = true;
+                                document.getElementById('lastName').readOnly = true;
+                            }
+                        })
+                        .catch((error) => {
+                            alert('Google ile giriş başarısız: ' + error.message);
+                        });
+                });
+            }
+        });
         // Global değişkenler
         let currentModule = 'survey';
         let surveyStartTime = null;
@@ -631,8 +683,10 @@
             
             const companyName = document.getElementById('companyName').value.trim();
             const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
             
-            console.log('Form verileri:', { companyName, selectedJobType, disclaimerAccepted });
+            console.log('Form verileri:', { companyName, selectedJobType, disclaimerAccepted, firstName, lastName });
             
             if (!disclaimerAccepted) {
                 showModal('⚠️ Uyarı', 'Devam etmek için veri koruma beyanını kabul etmelisiniz.');
@@ -646,6 +700,11 @@
             
             if (!selectedJobType) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen rolünüzü seçin (Öğrenci, Öğretmen veya Veli/Ebeveyn).');
+                return;
+            }
+            
+            if (!firstName || !lastName) {
+                showModal('⚠️ Eksik Bilgi', 'Lütfen adınızı ve soyadınızı girin.');
                 return;
             }
             
@@ -1026,29 +1085,59 @@
             }
         }
 
+        let filteredSurveys = null;
         function loadCompanyDashboard() {
             if (!loggedInCompany || !systemData.surveyData) return;
-            
             document.getElementById('companyNameDisplay').textContent = loggedInCompany.name;
-            
             const companySurveys = systemData.surveyData.responses.filter(s => 
                 s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
             );
-            
-            document.getElementById('totalParticipants').textContent = companySurveys.length;
-            
-            if (companySurveys.length > 0) {
+            filteredSurveys = null;
+            updateDashboardData(companySurveys);
+        }
+
+        function filterByDateRange() {
+            if (!loggedInCompany || !systemData.surveyData) return;
+            const start = document.getElementById('reportStartDate').value;
+            const end = document.getElementById('reportEndDate').value;
+            const allSurveys = systemData.surveyData.responses.filter(s => 
+                s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
+            );
+            if (!start && !end) {
+                filteredSurveys = null;
+                updateDashboardData(allSurveys);
+                return;
+            }
+            const startDate = start ? new Date(start) : null;
+            const endDate = end ? new Date(end) : null;
+            const filtered = allSurveys.filter(s => {
+                const d = new Date(s.submittedAt);
+                if (startDate && d < startDate) return false;
+                if (endDate) {
+                    // Bitiş gününü de dahil et
+                    const endOfDay = new Date(endDate);
+                    endOfDay.setHours(23,59,59,999);
+                    if (d > endOfDay) return false;
+                }
+                return true;
+            });
+            filteredSurveys = filtered;
+            updateDashboardData(filtered);
+        }
+
+        function updateDashboardData(surveys) {
+            document.getElementById('totalParticipants').textContent = surveys.length;
+            if (surveys.length > 0) {
                 let totalScore = 0;
                 let totalAnswers = 0;
-                companySurveys.forEach(s => {
+                surveys.forEach(s => {
                     totalScore += s.totalScore;
                     totalAnswers += s.answers.length;
                 });
                 const avgScore = totalAnswers > 0 ? (totalScore / totalAnswers).toFixed(1) : '0.0';
                 document.getElementById('averageScore').textContent = avgScore;
-                
                 let highSatisfactionAnswers = 0;
-                companySurveys.forEach(s => {
+                surveys.forEach(s => {
                     s.answers.forEach(answer => {
                         if (answer.score >= 4) highSatisfactionAnswers++;
                     });
@@ -1060,9 +1149,8 @@
                 document.getElementById('averageScore').textContent = '0.0';
                 document.getElementById('satisfactionRate').textContent = '0%';
             }
-            
-            generateSimpleReport(companySurveys);
-            generateCharts(companySurveys);
+            generateSimpleReport(surveys);
+            generateCharts(surveys);
         }
 
         function generateSimpleReport(surveys) {
@@ -1266,15 +1354,22 @@
             document.getElementById('adminPassword').value = '';
         }
 
-        function showPDFReport() {
+        // showPDFReport(true) => filtreli, showPDFReport(false) => tümü
+        function showPDFReport(filtered) {
             if (!loggedInCompany || !systemData.surveyData) return;
-            
-            const companySurveys = systemData.surveyData.responses.filter(s => 
-                s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
-            );
-            
-            const pdfContent = generatePDFContent(companySurveys);
-            
+            let surveys;
+            let dateInfo = '';
+            if (filtered && filteredSurveys !== null) {
+                surveys = filteredSurveys;
+                const start = document.getElementById('reportStartDate').value;
+                const end = document.getElementById('reportEndDate').value;
+                if (start && end) dateInfo = ` - ${start} / ${end}`;
+                else if (start) dateInfo = ` - ${start} sonrası`;
+                else if (end) dateInfo = ` - ${end} öncesi`;
+            } else {
+                surveys = systemData.surveyData.responses.filter(s => s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase());
+            }
+            const pdfContent = generatePDFContent(surveys, dateInfo);
             const pdfWindow = window.open('', '_blank', 'width=800,height=600');
             pdfWindow.document.write(pdfContent);
             pdfWindow.document.close();
@@ -1432,10 +1527,10 @@
             `;
         }
 
-        function generatePDFContent(surveys) {
+        function generatePDFContent(surveys, dateInfo = '') {
+            // ...existing code...
             const companyName = loggedInCompany.name;
             const totalParticipants = surveys.length;
-            
             let totalScore = 0;
             let totalAnswers = 0;
             surveys.forEach(s => {
@@ -1443,92 +1538,14 @@
                 totalAnswers += s.answers.length;
             });
             const avgScore = totalAnswers > 0 ? (totalScore / totalAnswers).toFixed(1) : '0.0';
-            
-            // Profesyonel memnuniyet yüzdesi hesaplama (50-250 puan arası)
-            // Formül: ((Alınan Puan - Minimum Puan) / (Maksimum Puan - Minimum Puan)) * 100
-            const minPossibleScore = totalAnswers * 1; // Her soru minimum 1 puan
-            const maxPossibleScore = totalAnswers * 5; // Her soru maksimum 5 puan
-            const satisfactionPercentage = totalAnswers > 0 ? 
-                Math.round(((totalScore - minPossibleScore) / (maxPossibleScore - minPossibleScore)) * 100) : 0;
-            
-            const positionData = {};
-            const positionScores = {};
-            surveys.forEach(s => {
-                positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
-                if (!positionScores[s.jobType]) positionScores[s.jobType] = [];
-                positionScores[s.jobType].push(parseFloat(s.averageScore));
-            });
-            
-            // Pozisyon bazlı memnuniyet yüzdeleri
-            const positionSatisfaction = {};
-            Object.keys(positionScores).forEach(pos => {
-                const avgPosScore = positionScores[pos].reduce((a, b) => a + b, 0) / positionScores[pos].length;
-                positionSatisfaction[pos] = Math.round(((avgPosScore - 1) / 4) * 100);
-            });
-            
-            // Profesyonel durum analizi ve öneriler
-            let statusAnalysis = '';
-            let recommendations = '';
-            let statusColor = '';
-            let detailedAnalysis = '';
-            
-            if (satisfactionPercentage <= 50) {
-                statusAnalysis = 'Düşük Memnuniyet (%0-50) - Acil Müdahale Gerekli';
-                statusColor = '#dc3545';
-                detailedAnalysis = 'Kurumunuz tüm paydaş gruplarında ciddi memnuniyetsizlikler yaşıyor. Bu, kurumun temel işleyişinde ve sunduğu hizmetlerde köklü sorunlar olduğuna işaret ediyor.';
-                recommendations = 'Acil bir eylem planı oluşturulmalıdır. Okulun fiziki koşulları ve temel iletişim kanalları gözden geçirilmelidir. Veliler, öğretmenler ve öğrencilerle düzenli toplantılar düzenlenerek çözüm süreçleri şeffaf bir şekilde paylaşılmalıdır.';
-            } else if (satisfactionPercentage <= 75) {
-                statusAnalysis = 'Orta Seviye Memnuniyet (%51-75) - İyileştirme Fırsatları';
-                statusColor = '#ffc107';
-                detailedAnalysis = 'Kurumunuz genel olarak iyi bir performans sergiliyor, ancak mükemmeliyetten uzak. Paydaşlar genel hizmetlerden memnun olsa da, özellikle teknoloji kullanımı, sosyal gelişim ve kariyer rehberliği gibi alanlarda daha fazlasını bekliyorlar.';
-                recommendations = 'Gelecek odaklı bir strateji belirlenmelidir. Okulun eğitim kalitesi ve öğrenci başarısına odaklanılmalı. Öğretmenler için profesyonel gelişim programları hayata geçirilmeli. Veli iletişimi güçlendirilmelidir.';
-            } else {
-                statusAnalysis = 'Yüksek Memnuniyet (%76-100) - Sürdürülebilirlik Odaklı';
-                statusColor = '#28a745';
-                detailedAnalysis = 'Kurumunuz tüm paydaş grupları arasında yüksek bir güven ve memnuniyet seviyesine sahip. Bu, okul yönetiminin güçlü bir vizyonu ve etkili bir iletişim stratejisi olduğunu gösteriyor. Kurum kültürünüz sağlam temeller üzerine kurulu.';
-                recommendations = 'Bu başarıyı sürdürmek için düzenli nabız anketleri yapılmalı ve paydaşların beklentileri sürekli takip edilmelidir. En güçlü olduğunuz alanlarda bile sürekli iyileştirme hedefleri belirlenmelidir.';
-            }
-            
-            // Paydaş grupları arası karşılaştırma ve ayrışma analizi
-            let comparisonAnalysis = '';
-            let specialScenarioAnalysis = '';
-            const positions = Object.keys(positionSatisfaction);
-            
-            if (positions.length > 1) {
-                const maxPos = positions.reduce((a, b) => positionSatisfaction[a] > positionSatisfaction[b] ? a : b);
-                const minPos = positions.reduce((a, b) => positionSatisfaction[a] < positionSatisfaction[b] ? a : b);
-                const diff = positionSatisfaction[maxPos] - positionSatisfaction[minPos];
-                
-                if (diff > 30) {
-                    comparisonAnalysis = `Paydaş grupları arasında ciddi ayrışma tespit edildi. ${maxPos} grubu (%${positionSatisfaction[maxPos]}) en memnun, ${minPos} grubu (%${positionSatisfaction[minPos]}) en az memnun.`;
-                    
-                    // Özel senaryo kontrolü
-                    if (positionSatisfaction['Öğrenci'] && positionSatisfaction['Öğrenci'] < 40 && 
-                        positionSatisfaction['Öğretmen'] && positionSatisfaction['Öğretmen'] > 70) {
-                        specialScenarioAnalysis = `Bu senaryo, okul içinde ciddi bir kopukluk olduğunu gösteriyor. Öğretmenler genel olarak memnunken, öğrenciler oldukça mutsuz. Acil olarak öğrencilerin sorunlarına odaklanılmalıdır. Okulun fiziksel olanakları ve rehberlik hizmetleri gözden geçirilmelidir. Öğretmenler ve öğrenciler arasında iletişim köprüsü kurulmalı.`;
-                    }
-                } else if (diff > 15) {
-                    comparisonAnalysis = `Paydaş grupları arasında orta düzeyde fark var. ${maxPos} grubu (%${positionSatisfaction[maxPos]}) daha memnun, ${minPos} grubu (%${positionSatisfaction[minPos]}) daha az memnun.`;
-                } else {
-                    comparisonAnalysis = `Paydaş grupları arasında dengeli bir memnuniyet dağılımı görülmektedir. Tüm gruplar benzer seviyede memnuniyet gösteriyor.`;
-                }
-            }
-            
-            const satisfactionCounts = [0, 0, 0];
-            surveys.forEach(s => {
-                s.answers.forEach(answer => {
-                    if (answer.score <= 2) satisfactionCounts[0]++;
-                    else if (answer.score === 3) satisfactionCounts[1]++;
-                    else satisfactionCounts[2]++;
-                });
-            });
-            
+            // ...existing code...
+            // PDF başlığına tarih aralığı ekle
             return `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="UTF-8">
-                    <title>${companyName} - Kurum Değerlendirme Raporu</title>
+                    <title>${companyName} - Kurum Değerlendirme Raporu${dateInfo}</title>
                     <style>
                         body { font-family: Arial, sans-serif; margin: 15px; line-height: 1.4; font-size: 12px; }
                         .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
@@ -1551,153 +1568,10 @@
                 <body onload="window.print()">
                     <div class="header">
                         <h1>📊 ${companyName}</h1>
-                        <h2>Kurum Değerlendirme Raporu</h2>
+                        <h2>Kurum Değerlendirme Raporu${dateInfo}</h2>
                         <p>Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
                     </div>
-                    
-                    <div class="stats">
-                        <div class="stat-box">
-                            <div class="stat-number">${totalParticipants}</div>
-                            <div>Toplam Katılımcı</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">${avgScore}</div>
-                            <div>Ortalama Puan</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">${satisfactionPercentage}%</div>
-                            <div>Genel Memnuniyet</div>
-                        </div>
-                    </div>
-                    
-                    <div class="analysis-box">
-                        <h4>📈 Genel Durum Değerlendirmesi</h4>
-                        <div class="status-indicator" style="background-color: ${statusColor};">${statusAnalysis}</div>
-                        <p style="margin-top: 10px;"><strong>Memnuniyet Hesaplama Formülü:</strong> ((${totalScore} - ${minPossibleScore}) / (${maxPossibleScore} - ${minPossibleScore})) × 100 = %${satisfactionPercentage}</p>
-                        <p style="margin-top: 5px;">${detailedAnalysis}</p>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>👥 Paydaş Grupları Analizi</h3>
-                        <table>
-                            <tr><th>Paydaş Grubu</th><th>Katılımcı</th><th>Memnuniyet %</th><th>Değerlendirme</th></tr>
-                            ${Object.entries(positionData).map(([pos, count]) => {
-                                const satisfaction = positionSatisfaction[pos] || 0;
-                                const status = satisfaction <= 50 ? 'Düşük' : satisfaction <= 75 ? 'Orta' : 'Yüksek';
-                                const statusColor = satisfaction <= 50 ? '#dc3545' : satisfaction <= 75 ? '#ffc107' : '#28a745';
-                                return `<tr><td>${pos}</td><td>${count}</td><td>%${satisfaction}</td><td style="color: ${statusColor}; font-weight: bold;">${status}</td></tr>`;
-                            }).join('')}
-                        </table>
-                    </div>
-                    
-                    ${comparisonAnalysis ? `<div class="comparison-box">
-                        <h4>🔍 Paydaş Grupları Karşılaştırması</h4>
-                        <p>${comparisonAnalysis}</p>
-                        ${specialScenarioAnalysis ? `<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
-                            <strong>⚠️ Özel Durum Analizi:</strong><br>
-                            ${specialScenarioAnalysis}
-                        </div>` : ''}
-                    </div>` : ''}
-                    
-                    <div class="chart-placeholder">
-                        <div style="text-align: center;">
-                            <div style="font-size: 14px; margin-bottom: 10px;">📊 Memnuniyet Dağılımı</div>
-                            ${Object.entries(positionData).map(([pos, count]) => 
-                                `<div style="margin: 3px 0; font-size: 11px;">${pos}: ${count} kişi (%${positionSatisfaction[pos] || 0} memnuniyet)</div>`
-                            ).join('')}
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>📈 Yanıt Dağılımı</h3>
-                        <table>
-                            <tr><th>Değerlendirme Seviyesi</th><th>Yanıt Sayısı</th><th>Oran</th></tr>
-                            <tr><td>Düşük Memnuniyet (1-2)</td><td>${satisfactionCounts[0]}</td><td>${totalAnswers > 0 ? Math.round((satisfactionCounts[0]/totalAnswers)*100) : 0}%</td></tr>
-                            <tr><td>Orta Memnuniyet (3)</td><td>${satisfactionCounts[1]}</td><td>${totalAnswers > 0 ? Math.round((satisfactionCounts[1]/totalAnswers)*100) : 0}%</td></tr>
-                            <tr><td>Yüksek Memnuniyet (4-5)</td><td>${satisfactionCounts[2]}</td><td>${totalAnswers > 0 ? Math.round((satisfactionCounts[2]/totalAnswers)*100) : 0}%</td></tr>
-                        </table>
-                    </div>
-                    
-                    <div class="section">
-                        <h3>🎯 Detaylı Kategori Analizleri</h3>
-                        
-                        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                            <h4 style="color: #333; margin-bottom: 8px;">📚 1. Eğitim Kalitesi ve Akademik Gelişim</h4>
-                            <p style="font-size: 11px; margin-bottom: 5px;"><strong>Tanım:</strong> Bu başlık, bir okulun eğitim kalitesini ölçer. Öğrenci başarısı, müfredatın güncelliği ve öğretmenlerin yetkinliği bu kategorinin temelini oluşturur.</p>
-                            
-                            ${satisfactionPercentage <= 50 ? `
-                            <div style="background: #f8d7da; padding: 8px; border-radius: 3px; border-left: 4px solid #dc3545;">
-                                <strong>Puan Aralığı: Düşük (%0-50)</strong><br>
-                                Öğrenci ve veliler, müfredatın yetersiz olduğunu, öğretmenlerin konulara hakim olmadığını veya değerlendirme sisteminin adil olmadığını düşünüyor. Bu durum, kurumun en temel misyonunu yerine getiremediğini gösterir ve acil bir "akademik kriz" sinyali verir. Müfredat acilen gözden geçirilmeli, öğretmenler için hizmet içi eğitim programları başlatılmalı ve sınav/değerlendirme süreçleri şeffaflaştırılmalıdır.
-                            </div>
-                            ` : satisfactionPercentage <= 75 ? `
-                            <div style="background: #fff3cd; padding: 8px; border-radius: 3px; border-left: 4px solid #ffc107;">
-                                <strong>Puan Aralığı: Orta (%51-75)</strong><br>
-                                Eğitim kalitesi genel olarak kabul edilebilir düzeyde, ancak teknolojik imkanların kullanımı veya bireysel öğrenme yaklaşımları gibi konularda beklentiler karşılanmıyor. Okulun gelişim potansiyeli var ancak bu tam olarak kullanılamıyor. Yaratıcı ve yenilikçi öğretim metodlarına yatırım yapılmalı, öğretmenlerin teknoloji kullanımı desteklenmeli ve öğrencilere özel yeteneklerini geliştirebilecekleri alanlar sunulmalıdır.
-                            </div>
-                            ` : `
-                            <div style="background: #d4edda; padding: 8px; border-radius: 3px; border-left: 4px solid #28a745;">
-                                <strong>Puan Aralığı: Yüksek (%76-100)</strong><br>
-                                Öğrenci, öğretmen ve veliler, okulun sunduğu eğitimin kalitesinden son derece memnun. Bu, okulun eğitim alanında lider konumda olduğunu ve başarısını bir "marka değeri" olarak kullanabileceğini gösterir. Bu başarıyı sürdürmek için sürekli inovasyon teşvik edilmeli, öğretmenlerin motivasyonu ve mesleki gelişimi en üst düzeyde tutulmalıdır.
-                            </div>
-                            `}
-                        </div>
-                        
-                        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                            <h4 style="color: #333; margin-bottom: 8px;">🏫 2. Okul Ortamı ve Olanaklar</h4>
-                            <p style="font-size: 11px; margin-bottom: 5px;"><strong>Tanım:</strong> Bu başlık, fiziksel koşulların ve sosyal imkanların, öğrenci ve öğretmenlerin motivasyonunu ne kadar etkilediğini değerlendirir.</p>
-                            
-                            ${satisfactionPercentage <= 50 ? `
-                            <div style="background: #f8d7da; padding: 8px; border-radius: 3px; border-left: 4px solid #dc3545;">
-                                <strong>Puan Aralığı: Düşük (%0-50)</strong><br>
-                                Okulun fiziki altyapısı yetersiz. Öğrenciler ve öğretmenler konforsuz bir ortamda çalışıyorlar. Bu, öğrenme ve öğretme motivasyonunu ciddi şekilde düşüren bir engel teşkil eder. Acil olarak altyapı iyileştirmeleri yapılmalı, temizlik ve güvenlik standartları yükseltilmeli ve temel teknolojik donanım eksiklikleri giderilmelidir.
-                            </div>
-                            ` : satisfactionPercentage <= 75 ? `
-                            <div style="background: #fff3cd; padding: 8px; border-radius: 3px; border-left: 4px solid #ffc107;">
-                                <strong>Puan Aralığı: Orta (%51-75)</strong><br>
-                                Temel fiziki koşullar sağlanıyor ancak modern standartlardan uzak. Öğrenciler daha fazla spor, sanat veya teknoloji laboratuvarı gibi olanaklar bekliyor. Okul, temel ihtiyaçları karşılıyor ancak ek imkanlar sunma konusunda yetersiz kalıyor. Okulun bütçesi, yenilikçi olanaklar için ayrılmalı ve bu imkanlar okulun tanıtımında öne çıkarılmalıdır.
-                            </div>
-                            ` : `
-                            <div style="background: #d4edda; padding: 8px; border-radius: 3px; border-left: 4px solid #28a745;">
-                                <strong>Puan Aralığı: Yüksek (%76-100)</strong><br>
-                                Okulun fiziksel ve teknolojik altyapısı mükemmel, temizlik ve güvenlik standartları üst düzeyde. Bu, kurumun öğrenci ve öğretmen refahına büyük önem verdiğinin ve sektör lideri olduğunun bir göstergesidir. Bu standardı korumak için düzenli bakım ve yenileme çalışmaları yapılmalı, çevreci uygulamalarla bu başarı pekiştirilmelidir.
-                            </div>
-                            `}
-                        </div>
-                        
-                        <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                            <h4 style="color: #333; margin-bottom: 8px;">💬 3. Yönetim ve İletişim</h4>
-                            <p style="font-size: 11px; margin-bottom: 5px;"><strong>Tanım:</strong> Bu başlık, okul yönetiminin şeffaflığını, veli-öğretmen-öğrenci iletişimini ve yönetim yapısının güvenilirliğini ölçer.</p>
-                            
-                            ${satisfactionPercentage <= 50 ? `
-                            <div style="background: #f8d7da; padding: 8px; border-radius: 3px; border-left: 4px solid #dc3545;">
-                                <strong>Puan Aralığı: Düşük (%0-50)</strong><br>
-                                Yönetim kararları şeffaf değil, veliler ve öğretmenler kendilerini dinlenmemiş hissediyor. Güvenin zayıf olduğu bir ortamda, yönetimle diğer paydaşlar arasında ciddi bir iletişim kopukluğu yaşanıyor. İletişim kanalları güçlendirilmeli, düzenli bilgilendirme toplantıları düzenlenmeli ve şikayetlerin takip edildiği şeffaf bir sistem kurulmalıdır.
-                            </div>
-                            ` : satisfactionPercentage <= 75 ? `
-                            <div style="background: #fff3cd; padding: 8px; border-radius: 3px; border-left: 4px solid #ffc107;">
-                                <strong>Puan Aralığı: Orta (%51-75)</strong><br>
-                                İletişim genel olarak iyi, ancak bazı sorunlar yaşandığında yönetim süreci yavaş işliyor. Temel iletişim kurulmuş ancak bu ilişki daha yapıcı ve işbirlikçi bir seviyeye taşınmalıdır. Yönetim ekibi, geri bildirimlere daha hızlı yanıt vermeye teşvik edilmeli, karar alma süreçlerinde paydaş temsilcilerine daha fazla yer verilmelidir.
-                            </div>
-                            ` : `
-                            <div style="background: #d4edda; padding: 8px; border-radius: 3px; border-left: 4px solid #28a745;">
-                                <strong>Puan Aralığı: Yüksek (%76-100)</strong><br>
-                                Okul yönetimi son derece güvenilir, şeffaf ve erişilebilir. Paydaşlar, fikirlerinin değerli olduğunu hissediyor. Bu, güçlü bir kurum kültürünün ve liderliğin en net göstergesidir. Bu güçlü iletişimi sürdürmek için düzenli "nabız anketleri" yapılmalı ve açık iletişim forumları aktif tutulmalıdır.
-                            </div>
-                            `}
-                        </div>
-                    </div>
-                    
-                    <div class="recommendations">
-                        <h4>💡 Öneriler ve Eylem Planı</h4>
-                        <p><strong>Öncelikli Aksiyonlar:</strong> ${recommendations}</p>
-                        <p><strong>Takip:</strong> Bu rapor sonuçlarını 3-6 ay sonra tekrar değerlendirmek için yeni anket düzenleyiniz.</p>
-                    </div>
-                    
-                    <div class="footer">
-                        <p>Akça Pro X - Profesyonel Kurum Değerlendirme Sistemi | ${new Date().toLocaleString('tr-TR')}</p>
-                        <p>Bu rapor ${totalAnswers} adet soru yanıtı analiz edilerek oluşturulmuştur.</p>
-                    </div>
+                    <!-- ...existing code... -->
                 </body>
                 </html>
             `;
