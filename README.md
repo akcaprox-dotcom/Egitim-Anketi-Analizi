@@ -693,6 +693,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function startSurvey() {
+            // Google ile giriş zorunluluğu (hastane.html ile aynı)
+            if (!googleUser) {
+                showModal('⚠️ Google ile Giriş Zorunlu', 'Ankete başlamadan önce Google ile giriş yapmalısınız.');
+                return;
+            }
             console.log('Anket başlatma fonksiyonu çalışıyor...');
             
             const companyName = document.getElementById('companyName').value.trim();
