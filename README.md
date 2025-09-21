@@ -6,10 +6,6 @@
     <title>Akça Pro X - Kurum Değerlendirme Anketi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <!-- Firebase Auth -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -96,8 +92,7 @@
             </div>
 
             <!-- Şirket Bilgileri -->
-            <div id="companyInfoSection" class="">
-                <h3 class="text-base font-semibold text-gray-700 mb-3">Kurum ve Kişisel Bilgiler</h3>
+            <div id="companyInfoSection">
                 <!-- Google ile Giriş Yap butonu -->
                 <div class="mb-3 flex flex-col items-center">
                     <button id="googleSignInBtn" type="button" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-gray-100 text-gray-700 font-semibold mb-2">
@@ -105,21 +100,28 @@
                     </button>
                     <div id="googleUserInfo" class="text-xs text-green-700 font-medium hidden"></div>
                 </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+                <h3 class="text-base font-semibold text-gray-700 mb-3">Kurum ve Kişisel Bilgiler</h3>
                 <div class="mb-3">
-                    <input type="text" id="companyName" placeholder="Kurum adınızı girin (Okul, Üniversite vb.)" class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <input type="text" id="companyName" placeholder="Kurum adınızı girin (Okul, Üniversite vb.)" 
+                        class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                 </div>
                 <div class="mb-3">
                     <p class="text-xs text-gray-600 mb-2">Rolünüzü seçin:</p>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <button type="button" onclick="selectJobType('Öğrenci')" id="studentBtn" class="job-btn py-3 px-2 text-xs rounded border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        <button type="button" onclick="selectJobType('Öğrenci')" id="studentBtn" 
+                            class="job-btn py-3 px-2 text-xs rounded border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-blue-400">
                             <div class="text-lg mb-1">🎓</div>
                             <div>Öğrenci</div>
                         </button>
-                        <button type="button" onclick="selectJobType('Öğretmen')" id="teacherBtn" class="job-btn py-3 px-2 text-xs rounded border-2 border-green-300 hover:border-green-500 hover:bg-green-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-green-400">
+                        <button type="button" onclick="selectJobType('Öğretmen')" id="teacherBtn" 
+                            class="job-btn py-3 px-2 text-xs rounded border-2 border-green-300 hover:border-green-500 hover:bg-green-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-green-400">
                             <div class="text-lg mb-1">👨‍🏫</div>
                             <div>Öğretmen</div>
                         </button>
-                        <button type="button" onclick="selectJobType('Veli/Ebeveyn')" id="parentBtn" class="job-btn py-3 px-2 text-xs rounded border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400">
+                        <button type="button" onclick="selectJobType('Veli/Ebeveyn')" id="parentBtn" 
+                            class="job-btn py-3 px-2 text-xs rounded border-2 border-purple-300 hover:border-purple-500 hover:bg-purple-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-purple-400">
                             <div class="text-lg mb-1">👨‍👩‍👧‍👦</div>
                             <div>Veli/Ebeveyn</div>
                         </button>
@@ -127,8 +129,10 @@
                 </div>
                 <div id="selectedJobDisplay" class="text-center text-sm text-gray-600 mb-3 min-h-[20px]"></div>
                 <div class="grid grid-cols-2 gap-2 mb-4">
-                    <input type="text" id="firstName" placeholder="Adınız" class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                    <input type="text" id="lastName" placeholder="Soyadınız" class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <input type="text" id="firstName" placeholder="Adınız" 
+                        class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <input type="text" id="lastName" placeholder="Soyadınız" 
+                        class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                 </div>
                 <button id="startSurvey" class="w-full py-3 rounded text-white font-semibold gradient-bg hover:opacity-90 transition-opacity text-sm">
                     📊 Anketi Başlat
@@ -163,69 +167,38 @@
                     <input type="password" id="companyPassword" placeholder="12 Karakterlik Şifre" 
                            class="w-full border-2 border-gray-300 rounded-lg px-4 py-4 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500" autocomplete="off">
                     <button onclick="loginCompany()" class="w-full py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-semibold">
-                        <script>
-                            // Firebase config
-                            const firebaseConfig = {
-                                apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
-                                authDomain: "akcaprox-anket.firebaseapp.com",
-                                projectId: "akcaprox-anket",
-                                storageBucket: "akcaprox-anket.appspot.com",
-                                messagingSenderId: "426135179922",
-                                appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b",
-                                measurementId: "G-CD1ET7RGX1"
-                            };
-                            firebase.initializeApp(firebaseConfig);
-                            const auth = firebase.auth();
+                        🔐 Giriş Yap
+                    </button>
+                </div>
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg text-sm text-blue-700">
+                    <p><strong>Not:</strong> Okul/kurum şifrenizi yöneticinizden alabilirsiniz.</p>
+                </div>
+            </div>
 
-                            // Google Sign-In logic
-                            let googleUser = null;
-                            document.addEventListener('DOMContentLoaded', function() {
-                                // Anket başlatma butonunu startSurvey fonksiyonuna bağla
-                                const startBtn = document.getElementById('startSurvey');
-                                if (startBtn) {
-                                    startBtn.addEventListener('click', startSurvey);
-                                }
-                                const googleBtn = document.getElementById('googleSignInBtn');
-                                const userInfoDiv = document.getElementById('googleUserInfo');
-                                if (googleBtn) {
-                                    googleBtn.addEventListener('click', function() {
-                                        const provider = new firebase.auth.GoogleAuthProvider();
-                                        auth.signInWithPopup(provider)
-                                            .then((result) => {
-                                                const user = result.user;
-                                                if (user) {
-                                                    googleUser = user;
-                                                    // Prefill name fields
-                                                    document.getElementById('firstName').value = user.displayName ? user.displayName.split(' ')[0] : '';
-                                                    document.getElementById('lastName').value = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
-                                                    userInfoDiv.textContent = `Giriş yapıldı: ${user.displayName} (${user.email})`;
-                                                    userInfoDiv.classList.remove('hidden');
-                                                    // Make name fields editable
-                                                    document.getElementById('firstName').readOnly = false;
-                                                    document.getElementById('lastName').readOnly = false;
-                                                }
-                                            })
-                                            .catch((error) => {
-                                                alert('Google ile giriş başarısız: ' + error.message);
-                                            });
-                                    });
-                                }
-                            });
+            <div id="companyDashboard" class="hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold">Okul/Kurum Raporları</h2>
+                        <p class="text-gray-600 text-lg" id="companyNameDisplay"></p>
+                    </div>
+                    <button onclick="logoutCompany()" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold">
+                        🚪 Çıkış
+                    </button>
+                </div>
 
-                            // Anket başlatma butonuna Google ile giriş kontrolü ekle
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const startBtn = document.getElementById('startSurvey');
-                                if (startBtn) {
-                                    startBtn.addEventListener('click', function(e) {
-                                        if (!googleUser) {
-                                            e.preventDefault();
-                                            alert('Ankete başlamadan önce Google ile giriş yapmalısınız.');
-                                        }
-                                    }, true);
-                                }
-                            });
-                            // ...existing code...
-                        </script>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-2">Toplam Katılımcı</h3>
+                        <p class="text-4xl font-bold" id="totalParticipants">0</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-2">Ortalama Puan</h3>
+                        <p class="text-4xl font-bold" id="averageScore">0.0</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-2">Değerlendirme Oranı</h3>
+                        <p class="text-4xl font-bold" id="satisfactionRate">0%</p>
+                    </div>
                 </div>
 
                 <div class="bg-white border rounded-lg p-6">
@@ -375,6 +348,60 @@
     </div>
 
     <script>
+// Firebase config ve Google Sign-In logic (hastane.html ile aynı)
+const firebaseConfig = {
+    apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
+    authDomain: "akcaprox-anket.firebaseapp.com",
+    projectId: "akcaprox-anket",
+    storageBucket: "akcaprox-anket.appspot.com",
+    messagingSenderId: "426135179922",
+    appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b",
+    measurementId: "G-CD1ET7RGX1"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+let googleUser = null;
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('startSurvey');
+    if (startBtn) {
+        startBtn.addEventListener('click', startSurvey);
+    }
+    const googleBtn = document.getElementById('googleSignInBtn');
+    const userInfoDiv = document.getElementById('googleUserInfo');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', function() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    if (user) {
+                        googleUser = user;
+                        document.getElementById('firstName').value = user.displayName ? user.displayName.split(' ')[0] : '';
+                        document.getElementById('lastName').value = user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '';
+                        userInfoDiv.textContent = `Giriş yapıldı: ${user.displayName} (${user.email})`;
+                        userInfoDiv.classList.remove('hidden');
+                        document.getElementById('firstName').readOnly = false;
+                        document.getElementById('lastName').readOnly = false;
+                    }
+                })
+                .catch((error) => {
+                    alert('Google ile giriş başarısız: ' + error.message);
+                });
+        });
+    }
+});
+// Anket başlatma butonuna Google ile giriş kontrolü ekle
+document.addEventListener('DOMContentLoaded', function() {
+    const startBtn = document.getElementById('startSurvey');
+    if (startBtn) {
+        startBtn.addEventListener('click', function(e) {
+            if (!googleUser) {
+                e.preventDefault();
+                alert('Ankete başlamadan önce Google ile giriş yapmalısınız.');
+            }
+        }, true);
+    }
+});
         // Global değişkenler
         let currentModule = 'survey';
         let surveyStartTime = null;
@@ -667,60 +694,57 @@
 
         function startSurvey() {
             console.log('Anket başlatma fonksiyonu çalışıyor...');
+            
             const companyName = document.getElementById('companyName').value.trim();
             const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
-            // Google ile giriş zorunluluğu (hastane.html ile aynı)
-            if (!googleUser) {
-                showModal(
-                    '🔒 Giriş Gerekli',
-                    `<div class="text-2xl font-extrabold text-red-700 mb-4">Google ile Giriş Yapmalısınız</div>
-                    <div class="text-base text-gray-800 mb-2">Ankete başlamadan önce kimliğinizi doğrulamanız gerekmektedir.</div>
-                    <ul class="list-disc pl-6 text-base text-gray-700 mb-4">
-                        <li>Yukarıdaki <b>Google ile Giriş Yap</b> butonunu kullanarak hesabınızla oturum açın.</li>
-                        <li>Giriş yaptıktan sonra ad ve soyad alanlarınız otomatik doldurulacak ve düzenlenebilir olacaktır.</li>
-                        <li>Gizliliğiniz korunur, bilgileriniz üçüncü kişilerle paylaşılmaz.</li>
-                    </ul>
-                    <div class="text-sm text-gray-500">Herhangi bir sorun yaşarsanız lütfen yöneticinizle iletişime geçin.</div>`
-                );
-                return;
-            }
+            
             console.log('Form verileri:', { companyName, selectedJobType, disclaimerAccepted, firstName, lastName });
+            
             if (!disclaimerAccepted) {
                 showModal('⚠️ Uyarı', 'Devam etmek için veri koruma beyanını kabul etmelisiniz.');
                 return;
             }
+            
             if (!companyName) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen kurum adını girin.');
                 return;
             }
+            
             if (!selectedJobType) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen rolünüzü seçin (Öğrenci, Öğretmen veya Veli/Ebeveyn).');
                 return;
             }
+            
             if (!firstName || !lastName) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen adınızı ve soyadınızı girin.');
                 return;
             }
+            
             // Seçilen role göre soruları al
             currentQuestions = questions[selectedJobType];
             console.log('Seçilen rol:', selectedJobType);
             console.log('Sorular:', currentQuestions);
+            
             if (!currentQuestions || currentQuestions.length === 0) {
                 showModal('❌ Hata', 'Seçilen rol için sorular bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
                 return;
             }
+            
             // Değişkenleri sıfırla
             currentQuestionIndex = 0;
             answers = [];
             surveyStartTime = new Date();
+            
             // Anket bölümünü göster
             document.getElementById('disclaimerSection').classList.add('hidden');
             document.getElementById('companyInfoSection').classList.add('hidden');
             document.getElementById('surveySection').classList.remove('hidden');
+            
             startTimer();
             displayCurrentQuestion();
+            
             console.log('Anket başarıyla başlatıldı!');
         }
 
