@@ -241,6 +241,30 @@
                             </div>
                         </div>
                     </div>
+                    <!-- SWOT Analizi Tablosu (Rapor Ekranı) -->
+                    <div class="bg-white border rounded-lg p-4 mb-6">
+                        <h4 class="font-semibold text-gray-800 mb-4 text-lg">SWOT Analizi</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm text-center border border-gray-300">
+                                <thead>
+                                    <tr>
+                                        <th class="bg-green-100 border border-gray-300 p-2">Güçlü Yönler</th>
+                                        <th class="bg-red-100 border border-gray-300 p-2">Zayıf Yönler</th>
+                                        <th class="bg-blue-100 border border-gray-300 p-2">Fırsatlar</th>
+                                        <th class="bg-yellow-100 border border-gray-300 p-2">Tehditler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="border border-gray-300 p-2 align-top">• Yüksek katılımcı memnuniyeti<br>• Güçlü eğitmen kadrosu<br>• Modern eğitim altyapısı</td>
+                                        <td class="border border-gray-300 p-2 align-top">• Yoğun dönemlerde iletişim eksikliği<br>• Kısıtlı sosyal etkinlikler<br>• Dijital materyal eksikliği</td>
+                                        <td class="border border-gray-300 p-2 align-top">• Dijitalleşme yatırımları<br>• Yeni eğitim programları<br>• Kamu destekleri</td>
+                                        <td class="border border-gray-300 p-2 align-top">• Artan rekabet<br>• Ekonomik dalgalanmalar<br>• Personel değişimi</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                     
                     <!-- Katılımcı Detayları Bölümü -->
                     <div class="bg-white border rounded-lg p-4 mb-6">
@@ -319,6 +343,9 @@
 
                 <div class="bg-white border rounded-lg p-6">
                     <h3 class="text-xl font-semibold mb-6">Okul/Kurum Listesi ve Yönetimi</h3>
+                    <div class="mb-4 flex flex-col sm:flex-row gap-2 items-center">
+                        <input id="companySearchInput" type="text" placeholder="🔍 Kurum adı ile ara..." class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" oninput="filterCompanyList()">
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto">
                             <thead>
@@ -932,40 +959,38 @@ document.addEventListener('DOMContentLoaded', function() {
         async function createCompanyIfNotExists(companyName) {
             try {
                 console.log('Kurum kontrol ediliyor:', companyName);
-                
                 if (!systemData.surveyData) {
                     systemData.surveyData = await loadFromJSONBin();
                 }
-                
                 const existingCompany = Object.entries(systemData.surveyData.companies || {})
                     .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
-                
                 if (existingCompany) {
+                    // Eski kurumda status yoksa ekle
+                    if (!existingCompany[1].status) {
+                        existingCompany[1].status = 'Aktif';
+                        await saveToJSONBin(systemData.surveyData);
+                    }
                     console.log('Mevcut kurum bulundu:', existingCompany[1]);
                     return { success: true, key: existingCompany[0], password: existingCompany[1].password };
                 }
-                
                 const companyKey = companyName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10) + '-' + Date.now();
                 const newPassword = generateCompanyPassword();
-                
                 if (!systemData.surveyData.companies) {
                     systemData.surveyData.companies = {};
                 }
-                
                 systemData.surveyData.companies[companyKey] = {
                     name: companyName,
                     password: newPassword,
                     createdAt: new Date().toISOString(),
-                    totalResponses: 0
+                    totalResponses: 0,
+                    status: 'Aktif'
                 };
-                
                 const saveResult = await saveToJSONBin(systemData.surveyData);
                 if (saveResult.success) {
                     return { success: true, key: companyKey, password: newPassword };
                 } else {
                     return { success: false, error: saveResult.error };
                 }
-                
             } catch (error) {
                 console.error('Kurum oluşturma hatası:', error);
                 return { success: false, error: error.message };
@@ -1080,24 +1105,25 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loginCompany() {
             const companyName = document.getElementById('companyLoginName').value.trim();
             const password = document.getElementById('companyPassword').value.trim();
-            
             if (!companyName || !password) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen kurum adı ve şifrenizi girin.');
                 return;
             }
-            
             try {
                 if (!systemData.surveyData) {
                     systemData.surveyData = await loadFromJSONBin();
                 }
-                
                 const companyEntry = Object.entries(systemData.surveyData.companies || {})
                     .find(([key, company]) => 
                         company.name.toLowerCase() === companyName.toLowerCase() && 
                         company.password === password
                     );
-                
                 if (companyEntry) {
+                    // Askıya alınmışsa giriş engelle
+                    if (companyEntry[1].status === 'Pasif') {
+                        showModal('⛔ Askıya Alındı', 'Bu kurum şu anda askıya alınmış/dondurulmuş. Lütfen yöneticinizle iletişime geçin.');
+                        return;
+                    }
                     loggedInCompany = {
                         key: companyEntry[0],
                         ...companyEntry[1]
@@ -1281,20 +1307,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function loadCompanyList() {
             const tbody = document.getElementById('companyList');
-            
             if (!systemData.surveyData || !systemData.surveyData.companies) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Henüz kurum kaydı bulunmuyor.</td></tr>';
                 return;
             }
-            
             const companies = systemData.surveyData.companies;
             const responses = systemData.surveyData.responses || [];
-            
-            tbody.innerHTML = Object.entries(companies).map(([companyKey, company]) => {
-                const companySurveys = responses.filter(s => 
+            // Şirketleri alfabetik sırala
+            const sortedCompanies = Object.entries(companies).sort((a, b) => {
+                const nameA = a[1].name.toLowerCase();
+                const nameB = b[1].name.toLowerCase();
+                return nameA.localeCompare(nameB, 'tr');
+            });
+            // Filtre uygula
+            let search = '';
+            const searchInput = document.getElementById('companySearchInput');
+            if (searchInput) search = searchInput.value.trim().toLowerCase();
+            const filtered = sortedCompanies.filter(([_, company]) =>
+                !search || company.name.toLowerCase().includes(search)
+            );
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Aramanıza uygun kurum bulunamadı.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = filtered.map(([companyKey, company]) => {
+                const companySurveys = responses.filter(s =>
                     s.companyName.toLowerCase() === company.name.toLowerCase()
                 );
-                
+                const status = company.status === 'Pasif' ? 'Pasif' : 'Aktif';
+                const statusColor = status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
                 return `
                     <tr class="border-b hover:bg-gray-50">
                         <td class="px-4 py-3 font-medium">${company.name}</td>
@@ -1303,17 +1344,38 @@ document.addEventListener('DOMContentLoaded', function() {
                         </td>
                         <td class="px-4 py-3">${companySurveys.length}</td>
                         <td class="px-4 py-3">
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                                🟢 Aktif
+                            <span class="px-2 py-1 rounded-full text-xs ${statusColor}">
+                                ${status === 'Aktif' ? '🟢 Aktif' : '⛔ Pasif'}
                             </span>
                         </td>
                         <td class="px-4 py-3">
                             <button onclick="showAdminCompanyReport('${company.name}')" class="text-green-600 hover:text-green-800 mr-2">📊 Rapor</button>
-                            <button onclick="resetCompanyPassword('${companyKey}')" class="text-orange-600 hover:text-orange-800">🔄 Şifre</button>
+                            <button onclick="resetCompanyPassword('${companyKey}')" class="text-orange-600 hover:text-orange-800 mr-2">🔄 Şifre</button>
+                            <button onclick="toggleCompanyStatus('${companyKey}')" class="text-xs font-bold px-2 py-1 rounded ${status === 'Aktif' ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'}">
+                                ${status === 'Aktif' ? 'Askıya Al' : 'Aktif Et'}
+                            </button>
                         </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+// Admin: Kurum durumunu değiştir (Aktif/Pasif) -- GLOBAL SCOPE
+async function toggleCompanyStatus(companyKey) {
+    if (!systemData.surveyData || !systemData.surveyData.companies[companyKey]) return;
+    const company = systemData.surveyData.companies[companyKey];
+    company.status = company.status === 'Aktif' ? 'Pasif' : 'Aktif';
+    const saveResult = await saveToJSONBin(systemData.surveyData);
+    if (saveResult.success) {
+        loadCompanyList();
+    } else {
+        showModal('❌ Hata', 'Durum güncellenemedi: ' + saveResult.error);
+    }
+}
+
+        // Canlı filtreleme için
+        function filterCompanyList() {
+            loadCompanyList();
         }
 
         async function resetCompanyPassword(companyKey) {
@@ -1637,6 +1699,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 ${dateInfo ? `<div class='date-info'>📅 Filtrelenmiş Rapor${dateInfo}</div>` : ''}
                 <div class='summary-grid'>
+                <!-- SWOT Analizi Tablosu (PDF) -->
+                <div class='section'>
+                    <div class='section-title'>SWOT Analizi</div>
+                    <table style="width:100%;border-collapse:collapse;margin:24px 0;">
+                        <tr>
+                            <th style="background:#d1fae5;border:1px solid #a3a3a3;padding:10px;">Güçlü Yönler</th>
+                            <th style="background:#fee2e2;border:1px solid #a3a3a3;padding:10px;">Zayıf Yönler</th>
+                            <th style="background:#dbeafe;border:1px solid #a3a3a3;padding:10px;">Fırsatlar</th>
+                            <th style="background:#fef9c3;border:1px solid #a3a3a3;padding:10px;">Tehditler</th>
+                        </tr>
+                        <tr>
+                            <td style="border:1px solid #a3a3a3;padding:10px;vertical-align:top;">• Yüksek katılımcı memnuniyeti<br>• Güçlü eğitmen kadrosu<br>• Modern eğitim altyapısı</td>
+                            <td style="border:1px solid #a3a3a3;padding:10px;vertical-align:top;">• Yoğun dönemlerde iletişim eksikliği<br>• Kısıtlı sosyal etkinlikler<br>• Dijital materyal eksikliği</td>
+                            <td style="border:1px solid #a3a3a3;padding:10px;vertical-align:top;">• Dijitalleşme yatırımları<br>• Yeni eğitim programları<br>• Kamu destekleri</td>
+                            <td style="border:1px solid #a3a3a3;padding:10px;vertical-align:top;">• Artan rekabet<br>• Ekonomik dalgalanmalar<br>• Personel değişimi</td>
+                        </tr>
+                    </table>
+                </div>
                     <div class='summary-box'><div style='font-size:1.1rem;'>${totalParticipants}</div>Toplam Katılımcı</div>
                     <div class='summary-box'><div style='font-size:1.1rem;'>${avgScore}</div>Ortalama Puan</div>
                     <div class='summary-box'><div style='font-size:1.1rem;'>${satisfactionPercent}%</div>Genel Memnuniyet</div>
