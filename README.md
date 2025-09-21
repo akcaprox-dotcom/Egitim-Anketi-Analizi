@@ -1557,8 +1557,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function generatePDFContent(surveys, dateInfo = '') {
-            // ...existing code...
-            const companyName = loggedInCompany.name;
+            const companyName = loggedInCompany ? loggedInCompany.name : '';
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('tr-TR');
+            const timeStr = now.toLocaleTimeString('tr-TR');
             const totalParticipants = surveys.length;
             let totalScore = 0;
             let totalAnswers = 0;
@@ -1567,42 +1569,115 @@ document.addEventListener('DOMContentLoaded', function() {
                 totalAnswers += s.answers.length;
             });
             const avgScore = totalAnswers > 0 ? (totalScore / totalAnswers).toFixed(1) : '0.0';
-            // ...existing code...
-            // PDF başlığına tarih aralığı ekle
+            const minPossibleScore = totalAnswers * 1;
+            const maxPossibleScore = totalAnswers * 5;
+            const satisfactionPercent = totalAnswers > 0 ? Math.round(((totalScore - minPossibleScore) / (maxPossibleScore - minPossibleScore)) * 100) : 0;
+            // Genel durum kutusu
+            let statusBox = '';
+            if (satisfactionPercent < 50) {
+                statusBox = `<div style='background:#fee2e2;padding:16px;border-radius:8px;margin-bottom:12px;'><b>Düşük Memnuniyet (%0-50) - Acil Müdahale Gerekli</b></div>`;
+            } else if (satisfactionPercent < 80) {
+                statusBox = `<div style='background:#fef9c3;padding:16px;border-radius:8px;margin-bottom:12px;'><b>Orta Memnuniyet (%51-80) - İyileştirme Gerekli</b></div>`;
+            } else {
+                statusBox = `<div style='background:#dcfce7;padding:16px;border-radius:8px;margin-bottom:12px;'><b>Yüksek Memnuniyet (%81-100)</b></div>`;
+            }
+            // Pozisyon analizi
+            const positionData = {};
+            surveys.forEach(s => {
+                positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
+            });
+            // Değerlendirme dağılımı
+            const satisfactionCounts = [0, 0, 0];
+            surveys.forEach(s => {
+                const avg = parseFloat(s.averageScore);
+                if (avg < 2.5) satisfactionCounts[0]++;
+                else if (avg < 3.5) satisfactionCounts[1]++;
+                else satisfactionCounts[2]++;
+            });
+            // Yanıt dağılımı
+            const answerLevels = ['Düşük Memnuniyet (1-2)', 'Orta Memnuniyet (3)', 'Yüksek Memnuniyet (4-5)'];
+            const answerCounts = [0, 0, 0];
+            surveys.forEach(s => {
+                s.answers.forEach(a => {
+                    if (a.score < 2.5) answerCounts[0]++;
+                    else if (a.score < 3.5) answerCounts[1]++;
+                    else answerCounts[2]++;
+                });
+            });
+            // Kategori analizleri (örnek başlıklar)
+            const educationCategories = [
+                { title: '1. Eğitim İçeriği ve Kalitesi', desc: 'Eğitim programının kapsamı, güncelliği ve uygulama yeterliliği.' },
+                { title: '2. Eğitmen Performansı', desc: 'Eğitmenlerin bilgi düzeyi, iletişimi ve katılımcı ile etkileşimi.' },
+                { title: '3. Fiziksel ve Dijital Ortam', desc: 'Eğitim ortamının konforu, teknik altyapı ve materyal kalitesi.' },
+                { title: '4. Katılımcı Memnuniyeti', desc: 'Katılımcıların genel memnuniyeti, beklenti karşılanması ve öneriler.' },
+                { title: '5. Genel Değerlendirme ve Tavsiye', desc: 'Eğitimin genel başarısı, tekrar tercih etme ve tavsiye etme eğilimleri.' }
+            ];
             return `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>${companyName} - Kurum Değerlendirme Raporu${dateInfo}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 15px; line-height: 1.4; font-size: 12px; }
-                        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
-                        .stats { display: flex; justify-content: space-between; margin-bottom: 20px; }
-                        .stat-box { background: #f5f5f5; padding: 10px; border-radius: 5px; text-align: center; width: 30%; }
-                        .stat-number { font-size: 1.5em; font-weight: bold; color: #333; }
-                        .section { margin-bottom: 20px; }
-                        .section h3 { color: #333; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 10px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11px; }
-                        th, td { border: 1px solid #ddd; padding: 5px; text-align: left; }
-                        th { background-color: #f2f2f2; }
-                        .analysis-box { background: #e8f4fd; padding: 10px; border-radius: 5px; margin: 10px 0; }
-                        .recommendations { background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0; }
-                        .status-indicator { padding: 5px 10px; border-radius: 3px; color: white; font-weight: bold; display: inline-block; }
-                        .chart-placeholder { width: 100%; height: 120px; background: #f8f9fa; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; margin: 10px 0; }
-                        .comparison-box { background: #f0f8ff; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #007bff; }
-                        .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; }
-                    </style>
-                </head>
-                <body onload="window.print()">
-                    <div class="header">
-                        <h1>📊 ${companyName}</h1>
-                        <h2>Kurum Değerlendirme Raporu${dateInfo}</h2>
-                        <p>Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-                    </div>
-                    <!-- ...existing code... -->
-                </body>
-                </html>
+            <html><head><title>${companyName} - Eğitim Anketi Raporu</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                .header { text-align: center; margin-top: 24px; }
+                .summary-grid { display: flex; justify-content: center; gap: 32px; margin: 24px 0; }
+                .summary-box { background: #f8fafc; border-radius: 12px; padding: 24px 32px; min-width: 180px; text-align: center; font-size: 1.5rem; }
+                .section { margin: 24px 0; }
+                .section-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px; }
+                .table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+                .table th, .table td { border: 1px solid #e5e7eb; padding: 8px 12px; text-align: left; }
+                .table th { background: #f1f5f9; }
+                .highlight { font-weight: bold; color: #dc2626; }
+                .info-box { background: #f1f5f9; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+                .category-box { background: #fef2f2; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+                .advice-box { background: #fef9c3; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+                .date-info { background: #dbeafe; border-radius: 8px; padding: 12px; margin-bottom: 16px; text-align: center; font-weight: bold; color: #1e40af; }
+            </style></head><body onload="window.print()">
+                <div class='header'>
+                    <div style='font-size:2.2rem;font-weight:bold;margin-bottom:8px;'>🏫 ${companyName}</div>
+                    <div style='font-size:1.3rem;font-weight:bold;'>Eğitim Değerlendirme Anketi Raporu${dateInfo}</div>
+                    <div style='font-size:1rem;margin-top:4px;'>Rapor Tarihi: ${dateStr}</div>
+                </div>
+                ${dateInfo ? `<div class='date-info'>📅 Filtrelenmiş Rapor${dateInfo}</div>` : ''}
+                <div class='summary-grid'>
+                    <div class='summary-box'><div style='font-size:1.1rem;'>${totalParticipants}</div>Toplam Katılımcı</div>
+                    <div class='summary-box'><div style='font-size:1.1rem;'>${avgScore}</div>Ortalama Puan</div>
+                    <div class='summary-box'><div style='font-size:1.1rem;'>${satisfactionPercent}%</div>Genel Memnuniyet</div>
+                </div>
+                <div class='section info-box'>
+                    <div class='section-title'>☑️ Genel Durum Değerlendirmesi</div>
+                    ${statusBox}
+                    <div>Memnuniyet Hesaplama Formülü: ((Alınan Puan - Minimum Puan) / (Maksimum Puan - Minimum Puan)) × 100 = ${satisfactionPercent}%</div>
+                    <div style='margin-top:8px;'>Eğitiminiz için ${dateInfo ? 'seçilen tarih için' : 'tüm katılımcılarda'} genel memnuniyet düzeyi yukarıda gösterilmiştir.</div>
+                </div>
+                <div class='section'>
+                    <div class='section-title'>👥 Katılımcı Grupları Analizi</div>
+                    <table class='table'>
+                        <tr><th>Katılımcı Grubu</th><th>Katılımcı</th></tr>
+                        ${Object.entries(positionData).map(([pos, count]) => `<tr><td>${pos}</td><td>${count}</td></tr>`).join('')}
+                    </table>
+                </div>
+                <div class='section'>
+                    <div class='section-title'>☑️ Yanıt Dağılımı</div>
+                    <table class='table'>
+                        <tr><th>Değerlendirme Seviyesi</th><th>Yanıt Sayısı</th></tr>
+                        ${answerLevels.map((level, i) => `<tr><td>${level}</td><td>${answerCounts[i]}</td></tr>`).join('')}
+                    </table>
+                </div>
+                <div class='section'>
+                    <div class='section-title'>📊 Detaylı Kategori Analizleri</div>
+                    ${educationCategories.map(cat => `
+                        <div class='category-box'>
+                            <b>${cat.title}</b><br>
+                            <span style='font-size:0.95rem;'>${cat.desc}</span>
+                            <div style='margin-top:8px;background:#fee2e2;padding:8px;border-radius:6px;'><b>Puan Aralığı: Düşük (%0-50)</b> - Bu kategoride ciddi iyileştirme gereklidir.</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class='section advice-box'>
+                    <b>💡 Öneriler ve Eylem Planı</b><br>
+                    <b>Öncelikli Aksiyonlar:</b> Eğitim içeriği, eğitmen performansı ve ortam koşulları gözden geçirilmeli.<br>
+                    <b>Takip:</b> Bu rapor sonuçlarını 3-6 ay sonra tekrar değerlendirmek için yeni anket düzenleyiniz.
+                </div>
+                <div style='text-align:right;font-size:0.9rem;color:#888;margin-top:32px;'>Akça Pro X - Kurum Değerlendirme Anketi | ${dateStr} ${timeStr}<br>Bu rapor ${totalAnswers} adet soru yanıtı analiz edilerek oluşturulmuştur.${dateInfo ? `<br>Filtre: ${dateInfo}` : ''}</div>
+            </body></html>
             `;
         }
 
