@@ -667,57 +667,60 @@
 
         function startSurvey() {
             console.log('Anket başlatma fonksiyonu çalışıyor...');
-            
             const companyName = document.getElementById('companyName').value.trim();
             const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
-            
+            // Google ile giriş zorunluluğu (hastane.html ile aynı)
+            if (!googleUser) {
+                showModal(
+                    '🔒 Giriş Gerekli',
+                    `<div class="text-2xl font-extrabold text-red-700 mb-4">Google ile Giriş Yapmalısınız</div>
+                    <div class="text-base text-gray-800 mb-2">Ankete başlamadan önce kimliğinizi doğrulamanız gerekmektedir.</div>
+                    <ul class="list-disc pl-6 text-base text-gray-700 mb-4">
+                        <li>Yukarıdaki <b>Google ile Giriş Yap</b> butonunu kullanarak hesabınızla oturum açın.</li>
+                        <li>Giriş yaptıktan sonra ad ve soyad alanlarınız otomatik doldurulacak ve düzenlenebilir olacaktır.</li>
+                        <li>Gizliliğiniz korunur, bilgileriniz üçüncü kişilerle paylaşılmaz.</li>
+                    </ul>
+                    <div class="text-sm text-gray-500">Herhangi bir sorun yaşarsanız lütfen yöneticinizle iletişime geçin.</div>`
+                );
+                return;
+            }
             console.log('Form verileri:', { companyName, selectedJobType, disclaimerAccepted, firstName, lastName });
-            
             if (!disclaimerAccepted) {
                 showModal('⚠️ Uyarı', 'Devam etmek için veri koruma beyanını kabul etmelisiniz.');
                 return;
             }
-            
             if (!companyName) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen kurum adını girin.');
                 return;
             }
-            
             if (!selectedJobType) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen rolünüzü seçin (Öğrenci, Öğretmen veya Veli/Ebeveyn).');
                 return;
             }
-            
             if (!firstName || !lastName) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen adınızı ve soyadınızı girin.');
                 return;
             }
-            
             // Seçilen role göre soruları al
             currentQuestions = questions[selectedJobType];
             console.log('Seçilen rol:', selectedJobType);
             console.log('Sorular:', currentQuestions);
-            
             if (!currentQuestions || currentQuestions.length === 0) {
                 showModal('❌ Hata', 'Seçilen rol için sorular bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
                 return;
             }
-            
             // Değişkenleri sıfırla
             currentQuestionIndex = 0;
             answers = [];
             surveyStartTime = new Date();
-            
             // Anket bölümünü göster
             document.getElementById('disclaimerSection').classList.add('hidden');
             document.getElementById('companyInfoSection').classList.add('hidden');
             document.getElementById('surveySection').classList.remove('hidden');
-            
             startTimer();
             displayCurrentQuestion();
-            
             console.log('Anket başarıyla başlatıldı!');
         }
 
