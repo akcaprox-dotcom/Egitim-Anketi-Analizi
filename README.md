@@ -693,9 +693,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function startSurvey() {
-            // Google ile giriş zorunluluğu (hastane.html ile aynı)
+            // Google ile giriş zorunluluğu (isletme.html ile birebir)
             if (!googleUser) {
-                showModal('⚠️ Google ile Giriş Zorunlu', 'Ankete başlamadan önce Google ile giriş yapmalısınız.');
+                showModal(
+                    '🔒 Giriş Gerekli',
+                    `<div class="text-2xl font-extrabold text-red-700 mb-4">Google ile Giriş Yapmalısınız</div>
+                    <div class="text-base text-gray-800 mb-2">Ankete başlamadan önce kimliğinizi doğrulamanız gerekmektedir.</div>
+                    <ul class="list-disc pl-6 text-base text-gray-700 mb-4">
+                        <li>Yukarıdaki <b>Google ile Giriş Yap</b> butonunu kullanarak hesabınızla oturum açın.</li>
+                        <li>Giriş yaptıktan sonra ad ve soyad alanlarınız otomatik doldurulacak ve düzenlenebilir olacaktır.</li>
+                        <li>Gizliliğiniz korunur, bilgileriniz üçüncü kişilerle paylaşılmaz.</li>
+                    </ul>
+                    <div class="text-sm text-gray-500">Herhangi bir sorun yaşarsanız lütfen yöneticinizle iletişime geçin.</div>`
+                );
                 return;
             }
             console.log('Anket başlatma fonksiyonu çalışıyor...');
