@@ -1504,6 +1504,11 @@ async function toggleCompanyStatus(companyKey) {
     if (!systemData.surveyData || !systemData.surveyData.companies[companyKey]) return;
     const company = systemData.surveyData.companies[companyKey];
     company.status = company.status === 'Aktif' ? 'Pasif' : 'Aktif';
+    // responses'ın en güncel halini tekrar çek ve birleştir
+    const latestData = await loadFromFirebase();
+    if (latestData.responses && typeof latestData.responses === 'object') {
+        systemData.surveyData.responses = latestData.responses;
+    }
     const saveResult = await saveToFirebase(systemData.surveyData);
     if (saveResult.success) {
         loadCompanyList();
@@ -1523,6 +1528,11 @@ async function toggleCompanyStatus(companyKey) {
             const newPassword = generateCompanyPassword();
             systemData.surveyData.companies[companyKey].password = newPassword;
             
+            // responses'ın en güncel halini tekrar çek ve birleştir
+            const latestData = await loadFromFirebase();
+            if (latestData.responses && typeof latestData.responses === 'object') {
+                systemData.surveyData.responses = latestData.responses;
+            }
             const saveResult = await saveToFirebase(systemData.surveyData);
             if (saveResult.success) {
                 loadCompanyList();
