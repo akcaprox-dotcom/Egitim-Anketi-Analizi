@@ -930,9 +930,28 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 console.log('Kurum kontrol ediliyor:', companyName);
                 if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromFirebase();
+                    let loaded = await loadFromFirebase();
+                    // Eğer null veya undefined dönerse, boş obje oluştur
+                    if (!loaded) {
+                        loaded = {
+                            surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
+                            createdAt: new Date().toISOString(),
+                            responses: [],
+                            statistics: {
+                                totalResponses: 0,
+                                averageScore: 0,
+                                lastUpdated: new Date().toISOString()
+                            },
+                            companies: {}
+                        };
+                    }
+                    systemData.surveyData = loaded;
                 }
-                const existingCompany = Object.entries(systemData.surveyData.companies || {})
+                // companies alanı yoksa mutlaka oluştur
+                if (!systemData.surveyData.companies) {
+                    systemData.surveyData.companies = {};
+                }
+                const existingCompany = Object.entries(systemData.surveyData.companies)
                     .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
                 if (existingCompany) {
                     // Eski kurumda status yoksa ekle
@@ -945,9 +964,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 const companyKey = companyName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10) + '-' + Date.now();
                 const newPassword = generateCompanyPassword();
-                if (!systemData.surveyData.companies) {
-                    systemData.surveyData.companies = {};
-                }
                 systemData.surveyData.companies[companyKey] = {
                     name: companyName,
                     password: newPassword,
