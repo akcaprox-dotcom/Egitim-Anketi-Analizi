@@ -1013,8 +1013,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(`Kurum işlemi başarısız: ${companyResult.error}`);
                 }
                 
-                systemData.surveyData = await loadFromFirebase();
-                
+
+                // Kayıt eklemeden hemen önce en güncel veriyi tekrar çek
+                const latestData = await loadFromFirebase();
+                if (!latestData.responses || typeof latestData.responses !== 'object' || Array.isArray(latestData.responses)) {
+                    latestData.responses = {};
+                }
                 const surveyResponse = {
                     id: 'survey_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                     companyName: companyName,
@@ -1027,11 +1031,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     averageScore: (answers.reduce((sum, answer) => sum + answer.score, 0) / answers.length).toFixed(2),
                     duration: document.getElementById('timeElapsed').textContent.split(': ')[1] || '00:00'
                 };
-                
-                if (!systemData.surveyData.responses || typeof systemData.surveyData.responses !== 'object' || Array.isArray(systemData.surveyData.responses)) {
-                    systemData.surveyData.responses = {};
+                latestData.responses[surveyResponse.id] = surveyResponse;
+                // Diğer alanları da güncel tut
+                if (!latestData.statistics) {
+                    latestData.statistics = {
+                        totalResponses: 0,
+                        averageScore: 0,
+                        lastUpdated: new Date().toISOString()
+                    };
                 }
-                systemData.surveyData.responses[surveyResponse.id] = surveyResponse;
+                const latestAllResponses = Object.values(latestData.responses);
+                latestData.statistics.totalResponses = latestAllResponses.length;
+                latestData.statistics.averageScore = (
+                    latestAllResponses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
+                    (latestAllResponses.length || 1)
+                ).toFixed(2);
+                latestData.statistics.lastUpdated = new Date().toISOString();
+                if (companyResult && latestData.companies && latestData.companies[companyResult.key]) {
+                    latestData.companies[companyResult.key].totalResponses = 
+                        latestAllResponses.filter(r => 
+                            r.companyName.toLowerCase() === companyName.toLowerCase()
+                        ).length;
+                }
+                // Son olarak güncel veriyi kaydet
+                const latestSaveResult = await saveToFirebase(latestData);
+                // systemData.surveyData'yı da güncelle
+                systemData.surveyData = latestData;
                 
                 if (!systemData.surveyData.statistics) {
                     systemData.surveyData.statistics = {
