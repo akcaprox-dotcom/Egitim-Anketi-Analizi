@@ -49,27 +49,48 @@ async function loadFromFirebase() {
 // Firebase'e veri yazma
 async function saveToFirebase(data) {
     try {
-        const url = FIREBASE_CONFIG.baseUrl + FIREBASE_CONFIG.dataPath;
-        console.log('[Firebase] PUT isteği başlatılıyor:', url);
-        const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        console.log('[Firebase] Yanıt status:', response.status, response.statusText);
-        let responseBody = '';
-        try {
-            responseBody = await response.text();
-        } catch (e) {
-            responseBody = '[Yanıt okunamadı]';
+        // Eğer sadece responses güncelleniyorsa PATCH kullan
+        if (data.__patchResponses) {
+            const url = FIREBASE_CONFIG.baseUrl + '/surveyData/responses.json';
+            console.log('[Firebase] PATCH (responses) isteği başlatılıyor:', url);
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data.responses)
+            });
+            let responseBody = '';
+            try {
+                responseBody = await response.text();
+            } catch (e) {
+                responseBody = '[Yanıt okunamadı]';
+            }
+            if (!response.ok) {
+                throw new Error('Firebase PATCH hatası: ' + response.status + ' - ' + responseBody);
+            }
+            return { success: true, responseBody };
+        } else {
+            const url = FIREBASE_CONFIG.baseUrl + FIREBASE_CONFIG.dataPath;
+            console.log('[Firebase] PUT isteği başlatılıyor:', url);
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            let responseBody = '';
+            try {
+                responseBody = await response.text();
+            } catch (e) {
+                responseBody = '[Yanıt okunamadı]';
+            }
+            if (!response.ok) {
+                throw new Error('Firebase veri yazma hatası: ' + response.status + ' - ' + responseBody);
+            }
+            return { success: true, responseBody };
         }
-        console.log('[Firebase] Yanıt gövdesi:', responseBody);
-        if (!response.ok) {
-            throw new Error('Firebase veri yazma hatası: ' + response.status + ' - ' + responseBody);
-        }
-        return { success: true, responseBody };
     } catch (error) {
         console.error('[Firebase] VERİ YAZMA HATASI:', error);
         alert('[Firebase] Veri yazma hatası!\n' + error.message);
@@ -1054,9 +1075,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         ).length;
                 }
                 // Son olarak güncel veriyi kaydet
-                const latestSaveResult = await saveToFirebase(latestData);
+                // Sadece responses objesini PATCH ile güncelle
+                const patchData = { responses: { [surveyResponse.id]: surveyResponse }, __patchResponses: true };
+                const latestSaveResult = await saveToFirebase(patchData);
                 // systemData.surveyData'yı da güncelle
-                systemData.surveyData = latestData;
+                if (!systemData.surveyData.responses || typeof systemData.surveyData.responses !== 'object') {
+                    systemData.surveyData.responses = {};
+                }
+                systemData.surveyData.responses[surveyResponse.id] = surveyResponse;
                 
                 if (!systemData.surveyData.statistics) {
                     systemData.surveyData.statistics = {
