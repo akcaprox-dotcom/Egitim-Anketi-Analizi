@@ -928,40 +928,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async function createCompanyIfNotExists(companyName) {
             try {
-                console.log('Kurum kontrol ediliyor:', companyName);
-                if (!systemData.surveyData) {
-                    let loaded = await loadFromFirebase();
-                    // Eğer null, undefined veya doğrudan null dönerse, boş obje oluştur
-                    if (!loaded || typeof loaded !== 'object' || loaded === null) {
-                        loaded = {
-                            surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
-                            createdAt: new Date().toISOString(),
-                            responses: [],
-                            statistics: {
-                                totalResponses: 0,
-                                averageScore: 0,
-                                lastUpdated: new Date().toISOString()
-                            },
-                            companies: {}
-                        };
-                    }
-                    systemData.surveyData = loaded;
-                }
-                // companies alanı yoksa veya null ise mutlaka oluştur
-                if (!systemData.surveyData.companies || typeof systemData.surveyData.companies !== 'object') {
-                    systemData.surveyData.companies = {};
-                }
+                if (!systemData.surveyData) await loadFromFirebase();
+                // companies alanı yoksa her zaman oluştur
+                if (!systemData.surveyData || typeof systemData.surveyData !== 'object') systemData.surveyData = {};
+                if (!systemData.surveyData.companies || typeof systemData.surveyData.companies !== 'object') systemData.surveyData.companies = {};
+                // Mevcut şirket var mı kontrol et
                 const existingCompany = Object.entries(systemData.surveyData.companies)
-                    .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
+                    .find(([key, company]) => company.name && company.name.toLowerCase() === companyName.toLowerCase());
                 if (existingCompany) {
                     // Eski kurumda status yoksa ekle
                     if (!existingCompany[1].status) {
                         existingCompany[1].status = 'Aktif';
                         await saveToFirebase(systemData.surveyData);
                     }
-                    console.log('Mevcut kurum bulundu:', existingCompany[1]);
                     return { success: true, key: existingCompany[0], password: existingCompany[1].password };
                 }
+                // Yeni şirket oluştur
                 const companyKey = companyName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10) + '-' + Date.now();
                 const newPassword = generateCompanyPassword();
                 systemData.surveyData.companies[companyKey] = {
@@ -978,7 +960,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     return { success: false, error: saveResult.error };
                 }
             } catch (error) {
-                console.error('Kurum oluşturma hatası:', error);
                 return { success: false, error: error.message };
             }
         }
