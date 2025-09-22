@@ -1,60 +1,3 @@
-<script>
-// Firebase Realtime Database REST API ayarları
-const FIREBASE_CONFIG = {
-    baseUrl: 'https://egitim-37c53-default-rtdb.europe-west1.firebasedatabase.app',
-    dataPath: '/surveyData.json' // Tüm veriler bu path altında tutulacak
-};
-
-// Firebase'den veri okuma
-async function loadFromFirebase() {
-    try {
-        const response = await fetch(FIREBASE_CONFIG.baseUrl + FIREBASE_CONFIG.dataPath, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        if (!response.ok) throw new Error('Firebase veri okuma hatası: ' + response.status);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Firebase veri okuma hatası:', error);
-        // Varsayılan boş veri yapısı döndür
-        return {
-            surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
-            createdAt: new Date().toISOString(),
-            responses: [],
-            statistics: {
-                totalResponses: 0,
-                averageScore: 0,
-                lastUpdated: new Date().toISOString()
-            },
-            companies: {}
-        };
-    }
-}
-
-// Firebase'e veri yazma
-async function saveToFirebase(data) {
-    try {
-        const response = await fetch(FIREBASE_CONFIG.baseUrl + FIREBASE_CONFIG.dataPath, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error('Firebase veri yazma hatası: ' + response.status + ' - ' + errorText);
-        }
-        return { success: true };
-    } catch (error) {
-        console.error('Firebase veri yazma hatası:', error);
-        return { success: false, error: error.message };
-    }
-}
-</script>
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -104,14 +47,15 @@ async function saveToFirebase(data) {
     <nav class="gradient-bg text-white p-3 shadow-lg sticky top-0 z-50">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
             <div class="flex items-center gap-2">
-                <!-- Gizli yönetici erişimi (sadece silik dönen yuvarlak) -->
-                <div class="flex items-center gap-3">
-                    <div onclick="showModule('admin')" class="w-3 h-3 cursor-pointer opacity-15 hover:opacity-50 transition-opacity" title="Gizli Yönetici Girişi">
-                        <div class="w-3 h-3 rounded-full border border-white/30 flex items-center justify-center animate-spin" style="animation-duration: 12s;">
-                            <div class="w-1 h-1 bg-white/40 rounded-full"></div>
-                        </div>
+                <!-- Gizli yönetici erişimi -->
+                <div onclick="showModule('admin')" class="w-3 h-3 cursor-pointer opacity-15 hover:opacity-50 transition-opacity" title="">
+                    <div class="w-3 h-3 rounded-full border border-white/30 flex items-center justify-center animate-spin" style="animation-duration: 12s;">
+                        <div class="w-1 h-1 bg-white/40 rounded-full"></div>
                     </div>
-                    <span class="text-lg font-semibold tracking-tight select-none opacity-80">Akça Pro X<br><span class="text-xs font-normal opacity-70">Kurumsal Anket ve Raporlama Sistemi</span></span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold">Akça Pro X</h1>
+                    <p class="text-xs opacity-90">Kurum Değerlendirme Anketi</p>
                 </div>
             </div>
             <div class="flex gap-2">
@@ -127,6 +71,7 @@ async function saveToFirebase(data) {
             <div class="text-center mb-6">
                 <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-1 tracking-tight">Kurum Değerlendirme Anketi</h2>
                 <p class="text-gray-600 mb-2 text-base md:text-lg">Görüşleriniz bizim için değerli</p>
+                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">v3.0.0 - Firebase Entegre</span>
             </div>
 
             <!-- Sorumluluk Reddi -->
@@ -134,9 +79,9 @@ async function saveToFirebase(data) {
                 <div class="bg-yellow-50 border border-yellow-300 rounded p-3 mb-3">
                     <h3 class="font-semibold text-yellow-800 mb-2 text-sm">⚠️ Veri Koruma Beyanı</h3>
                     <div class="text-xs text-yellow-700 space-y-1">
-                        <p>• Verileriniz güvenli bir şekilde saklanır ve üçüncü taraflarla paylaşılmaz.</p>
+                        <p>• Verileriniz <b>Google Firebase</b> bulut altyapısında güvenli bir şekilde saklanır ve üçüncü taraflarla paylaşılmaz.</p>
                         <p>• Anket sonuçları sadece kurum yetkilileri tarafından görüntülenebilir.</p>
-                        <p>• Sistem güvenliği hizmet sağlayıcıya aittir.</p>
+                        <p>• Sistem güvenliği hizmet sağlayıcıya (<b>Firebase</b>) aittir.</p>
                         <p>• Hack, veri ihlali vb. güvenlik olaylarından kaynaklanan bilgi erişimlerinin sorumluluğu Akça Pro X'e ait değildir.</p>
                     </div>
                 </div>
@@ -257,13 +202,15 @@ async function saveToFirebase(data) {
                 </div>
 
                 <div class="bg-white border rounded-lg p-6">
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-                        <h3 class="text-lg font-semibold mb-2 md:mb-0">Anket Sonuçları</h3>
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-2">
+                        <h3 class="text-xl font-semibold mb-2 md:mb-0">Anket Sonuçları</h3>
                         <div class="flex flex-col md:flex-row gap-2 items-center">
                             <input type="date" id="reportStartDate" class="border rounded px-2 py-1 text-sm" />
                             <span class="mx-1">-</span>
                             <input type="date" id="reportEndDate" class="border rounded px-2 py-1 text-sm" />
                             <button onclick="filterByDateRange()" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">Tarihe Göre Rapor</button>
+                            <button onclick="showPDFReport(true)" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm" style="display:none">📄 PDF Göster (Filtreli)</button>
+                            <button onclick="showPDFReport(false)" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm" style="display:none">📄 PDF Göster (Tümü)</button>
                         </div>
                     </div>
                     
@@ -295,7 +242,7 @@ async function saveToFirebase(data) {
                         </div>
                     </div>
                     <!-- SWOT Analizi Tablosu (Rapor Ekranı) -->
-                    <div class="bg-white border rounded-lg p-4 mb-6">
+                    <div class="bg-white border rounded-lg p-4 mb-6" style="display:none">
                         <h4 class="font-semibold text-gray-800 mb-4 text-lg">SWOT Analizi</h4>
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm text-center border border-gray-300">
@@ -320,41 +267,32 @@ async function saveToFirebase(data) {
                     </div>
                     
                     <!-- Katılımcı Detayları Bölümü -->
-                    <!-- Katılımcı Listesi (Açılır/Kapanır) -->
-                    <div id="participantListSection" class="bg-white border rounded-lg p-4 mb-6">
-                        <button id="toggleParticipantListBtn" class="w-full flex items-center justify-between font-semibold text-gray-800 mb-3 focus:outline-none" onclick="toggleParticipantList()">
-                            <span>👥 Katılımcı Listesi</span>
-                            <span id="participantListArrow">▼</span>
-                        </button>
-                        <div id="participantListTableWrapper" class="overflow-x-auto hidden">
-                            <table class="w-full table-auto text-sm">
-                                <thead>
-                                    <tr class="bg-gray-100">
-                                        <th class="px-3 py-2 text-left">İsim Soyisim</th>
-                                        <th class="px-3 py-2 text-left">Pozisyon</th>
-                                        <th class="px-3 py-2 text-center">Ortalama Puan</th>
-                                        <th class="px-3 py-2 text-center">Tarih</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="participantListBody">
-                                    <!-- Katılımcı listesi buraya yüklenecek -->
-                                </tbody>
-                            </table>
+                    <div class="bg-white border rounded-lg p-4 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-semibold text-gray-800">👥 Katılımcı Detayları</h4>
+                            <button onclick="toggleParticipantDetails()" id="toggleParticipantsBtn" class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                📋 Katılımcıları Görüntüle
+                            </button>
+                        </div>
+                        <div id="participantDetails" class="hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full table-auto text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="px-3 py-2 text-left">İsim</th>
+                                            <th class="px-3 py-2 text-left">Pozisyon</th>
+                                            <th class="px-3 py-2 text-center">Ortalama Puan</th>
+                                            <th class="px-3 py-2 text-center">Değerlendirme</th>
+                                            <th class="px-3 py-2 text-center">Tarih</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="participantTableBody">
+                                        <!-- Katılımcı listesi buraya yüklenecek -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-<script>
-function toggleParticipantList() {
-    const wrapper = document.getElementById('participantListTableWrapper');
-    const arrow = document.getElementById('participantListArrow');
-    if (wrapper.classList.contains('hidden')) {
-        wrapper.classList.remove('hidden');
-        arrow.textContent = '▲';
-    } else {
-        wrapper.classList.add('hidden');
-        arrow.textContent = '▼';
-    }
-}
-</script>
                     
                     <div id="detailedReport" class="space-y-4"></div>
                 </div>
@@ -502,6 +440,15 @@ document.addEventListener('DOMContentLoaded', function() {
         let loggedInCompany = null;
         let isAdminLoggedIn = false;
 
+        // JSONBin.io konfigürasyonu
+        const JSONBIN_CONFIG = {
+            apiKey: '$2a$10$Vre/Nl1Aa1vrK2xY1NHYguabG45SOU1sMt3dnh.UJYpdBoQSdnz1.',
+            accessKey: '$2a$10$SCDSdHz/rW/Z3Q6EWaB68uSJR2GAhE3pjG/i3.gJEhKsviO.yl6DC',
+            binId: '68ce6bf543b1c97be9491ab1',
+            baseUrl: 'https://api.jsonbin.io/v3',
+            maxRetries: 3,
+            retryDelay: 1000
+        };
 
         // Soru setleri
         const questions = {
@@ -925,12 +872,95 @@ document.addEventListener('DOMContentLoaded', function() {
             updateProgress();
         }
 
+        // JSONBin.io API fonksiyonları
+        async function createNewBin() {
+            throw new Error('Sabit binId ile çalışıyor, yeni bin oluşturulamaz.');
+        }
+
+        async function loadFromJSONBin() {
+            try {
+                if (!JSONBIN_CONFIG.binId) {
+                    throw new Error('Sabit binId tanımlı değil!');
+                }
+                console.log('JSONBin\'den veri yükleniyor... Bin ID:', JSONBIN_CONFIG.binId);
+                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/b/${JSONBIN_CONFIG.binId}/latest`, {
+                    headers: {
+                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
+                        'X-Access-Key': JSONBIN_CONFIG.accessKey,
+                        'X-Bin-Meta': 'false'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    systemData.surveyData = data.record || data;
+                    return systemData.surveyData;
+                } else {
+                    throw new Error(`API Hatası: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('JSONBin yükleme hatası:', error);
+                const defaultData = {
+                    surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
+                    createdAt: new Date().toISOString(),
+                    responses: [],
+                    statistics: {
+                        totalResponses: 0,
+                        averageScore: 0,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    companies: {}
+                };
+                systemData.surveyData = defaultData;
+                return defaultData;
+            }
+        }
+
+        async function saveToJSONBin(data, retryCount = 0) {
+            try {
+                if (!JSONBIN_CONFIG.binId) {
+                    throw new Error('Sabit binId tanımlı değil!');
+                }
+                console.log(`JSONBin'e veri kaydediliyor... Bin ID: ${JSONBIN_CONFIG.binId}`);
+                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/b/${JSONBIN_CONFIG.binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
+                        'X-Access-Key': JSONBIN_CONFIG.accessKey,
+                        'X-Bin-Versioning': 'false'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('JSONBin kaydetme başarılı:', result);
+                    return { success: true, data: result };
+                } else {
+                    const errorText = await response.text();
+                    console.error('JSONBin API hatası:', response.status, errorText);
+                    if (retryCount < JSONBIN_CONFIG.maxRetries && (response.status >= 500 || response.status === 429)) {
+                        console.log(`${JSONBIN_CONFIG.retryDelay}ms sonra yeniden denenecek...`);
+                        await new Promise(resolve => setTimeout(resolve, JSONBIN_CONFIG.retryDelay * (retryCount + 1)));
+                        return await saveToJSONBin(data, retryCount + 1);
+                    }
+                    return { success: false, error: `API Hatası: ${response.status} - ${errorText}` };
+                }
+            } catch (error) {
+                console.error('JSONBin bağlantı hatası:', error);
+                if (retryCount < JSONBIN_CONFIG.maxRetries) {
+                    console.log(`Ağ hatası - ${JSONBIN_CONFIG.retryDelay}ms sonra yeniden denenecek...`);
+                    await new Promise(resolve => setTimeout(resolve, JSONBIN_CONFIG.retryDelay * (retryCount + 1)));
+                    return await saveToJSONBin(data, retryCount + 1);
+                }
+                return { success: false, error: `Bağlantı Hatası: ${error.message}` };
+            }
+        }
 
         async function createCompanyIfNotExists(companyName) {
             try {
                 console.log('Kurum kontrol ediliyor:', companyName);
                 if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromFirebase();
+                    systemData.surveyData = await loadFromJSONBin();
                 }
                 const existingCompany = Object.entries(systemData.surveyData.companies || {})
                     .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
@@ -938,7 +968,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Eski kurumda status yoksa ekle
                     if (!existingCompany[1].status) {
                         existingCompany[1].status = 'Aktif';
-                        await saveToFirebase(systemData.surveyData);
+                        await saveToJSONBin(systemData.surveyData);
                     }
                     console.log('Mevcut kurum bulundu:', existingCompany[1]);
                     return { success: true, key: existingCompany[0], password: existingCompany[1].password };
@@ -955,7 +985,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     totalResponses: 0,
                     status: 'Aktif'
                 };
-                const saveResult = await saveToFirebase(systemData.surveyData);
+                const saveResult = await saveToJSONBin(systemData.surveyData);
                 if (saveResult.success) {
                     return { success: true, key: companyKey, password: newPassword };
                 } else {
@@ -994,7 +1024,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(`Kurum işlemi başarısız: ${companyResult.error}`);
                 }
                 
-                systemData.surveyData = await loadFromFirebase();
+                systemData.surveyData = await loadFromJSONBin();
                 
                 const surveyResponse = {
                     id: 'survey_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -1036,7 +1066,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ).length;
                 }
                 
-                const saveResult = await saveToFirebase(systemData.surveyData);
+                const saveResult = await saveToJSONBin(systemData.surveyData);
                 
                 if (saveResult.success) {
                     document.getElementById('surveySection').innerHTML = `
@@ -1044,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="text-8xl mb-6">✅</div>
                             <h2 class="text-3xl font-bold text-green-800 mb-6">Anketiniz Başarıyla Kaydedildi!</h2>
                             <p class="text-green-700 mb-6 text-lg">
-                                Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde sistemimizde (Firebase) saklandı.
+                                Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde JSONBin.io sisteminde saklandı.
                             </p>
                             <div class="bg-blue-50 p-6 rounded-lg border border-blue-200 mb-6">
                                 <p class="text-base text-blue-700">
@@ -1081,7 +1111,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             try {
                 if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromFirebase();
+                    systemData.surveyData = await loadFromJSONBin();
                 }
                 const companyEntry = Object.entries(systemData.surveyData.companies || {})
                     .find(([key, company]) => 
@@ -1114,19 +1144,9 @@ document.addEventListener('DOMContentLoaded', function() {
         function loadCompanyDashboard() {
             if (!loggedInCompany || !systemData.surveyData) return;
             document.getElementById('companyNameDisplay').textContent = loggedInCompany.name;
-            // Durum göstergesi
-            const statusSpan = document.getElementById('companyStatusDisplay');
-            if (statusSpan) {
-                if (loggedInCompany.status === 'Pasif') {
-                    statusSpan.textContent = '⛔ Pasif';
-                    statusSpan.className = 'inline-block mt-1 text-xs font-semibold px-2 py-1 rounded-full bg-red-100 text-red-800';
-                } else {
-                    statusSpan.textContent = '🟢 Aktif';
-                    statusSpan.className = 'inline-block mt-1 text-xs font-semibold px-2 py-1 rounded-full bg-green-100 text-green-800';
-                }
-            }
-            const companySurveys = systemData.surveyData.responses.filter(s => 
-                s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
+            const allResponses = Object.values(systemData.surveyData.responses || {});
+            const companySurveys = allResponses.filter(s => 
+                s.companyName && s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
             );
             filteredSurveys = null;
             updateDashboardData(companySurveys);
@@ -1136,8 +1156,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!loggedInCompany || !systemData.surveyData) return;
             const start = document.getElementById('reportStartDate').value;
             const end = document.getElementById('reportEndDate').value;
-            const allSurveys = systemData.surveyData.responses.filter(s => 
-                s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
+            const allResponses = Object.values(systemData.surveyData.responses || {});
+            const allSurveys = allResponses.filter(s => 
+                s.companyName && s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
             );
             if (!start && !end) {
                 filteredSurveys = null;
@@ -1194,23 +1215,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('detailedReport').innerHTML = '<p class="text-gray-500 text-center py-8 text-lg">Henüz anket verisi bulunmuyor.</p>';
                 return;
             }
-            
+            // Pozisyon ve memnuniyet özetleri (eski kod)
             const positionData = {};
             surveys.forEach(s => {
                 positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
             });
-            
             const satisfactionLevels = ['Düşük (1-2)', 'Orta (3)', 'Yüksek (4-5)'];
             const satisfactionCounts = [0, 0, 0];
-            
             surveys.forEach(s => {
                 const avgScore = parseFloat(s.averageScore);
                 if (avgScore < 2.5) satisfactionCounts[0]++;
                 else if (avgScore >= 2.5 && avgScore < 3.5) satisfactionCounts[1]++;
                 else satisfactionCounts[2]++;
             });
-            
-            const report = `
+            let report = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-blue-50 p-6 rounded-lg">
                         <h4 class="font-semibold text-blue-800 mb-4 text-lg">👥 Pozisyon Dağılımı</h4>
@@ -1221,7 +1239,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>`
                         ).join('')}
                     </div>
-                    
                     <div class="bg-green-50 p-6 rounded-lg">
                         <h4 class="font-semibold text-green-800 mb-4 text-lg">📊 Değerlendirme Seviyeleri</h4>
                         ${satisfactionLevels.map((level, i) => 
@@ -1232,7 +1249,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         ).join('')}
                     </div>
                 </div>
-                
                 <div class="mt-6 bg-gray-50 p-6 rounded-lg">
                     <h4 class="font-semibold text-gray-800 mb-3 text-lg">📈 Özet</h4>
                     <p class="text-base text-gray-700">
@@ -1241,7 +1257,48 @@ document.addEventListener('DOMContentLoaded', function() {
                     </p>
                 </div>
             `;
-            
+
+            // Detaylı memnuniyet dağılımı tablosu (başlıkta yüzdelik, sorularda rakam)
+            const memnuniyetLabels = ['Çok Memnunum', 'Memnun', 'Kararsızım', 'Memnun Değilim', 'Hiç Memnun Değilim'];
+            const memnuniyetMap = {5:0, 4:1, 3:2, 2:3, 1:4};
+            const groups = Object.keys(questions);
+            let detayTablo = `<div class="overflow-x-auto mt-8"><table class="min-w-full text-xs text-center border border-gray-300 bg-white"><thead><tr><th class="border p-2">Grup / Soru</th>${memnuniyetLabels.map(l=>`<th class="border p-2">${l}</th>`).join('')}</tr></thead><tbody>`;
+            groups.forEach(grup => {
+                // Grup başlığı için yüzdelik dağılım
+                const grupSurveys = surveys.filter(s => s.jobType === grup);
+                const toplamCevap = grupSurveys.length * (questions[grup]?.length || 0);
+                const grupCounts = [0,0,0,0,0];
+                grupSurveys.forEach(s => {
+                    (s.answers||[]).forEach(a => {
+                        if (memnuniyetMap[a.score] !== undefined) grupCounts[memnuniyetMap[a.score]]++;
+                    });
+                });
+                detayTablo += `<tr class="bg-gray-100 font-bold"><td class="border p-2">${grup}</td>`;
+                if (toplamCevap > 0) {
+                    grupCounts.forEach(c => {
+                        const yuzde = ((c/toplamCevap)*100).toFixed(1);
+                        detayTablo += `<td class="border p-2">${yuzde}%</td>`;
+                    });
+                } else {
+                    grupCounts.forEach(_ => detayTablo += `<td class="border p-2">0.0%</td>`);
+                }
+                detayTablo += `</tr>`;
+                // Her soru için cevap sayısı
+                questions[grup].forEach((soru, idx) => {
+                    const counts = [0,0,0,0,0];
+                    grupSurveys.forEach(s => {
+                        if (s.answers && s.answers[idx] && s.answers[idx].score) {
+                            const score = s.answers[idx].score;
+                            if (memnuniyetMap[score] !== undefined) counts[memnuniyetMap[score]]++;
+                        }
+                    });
+                    detayTablo += `<tr><td class="border p-2 text-left">${soru.replace(/<[^>]+>/g, '').replace(/\s*\p{Emoji_Presentation}/gu, '').slice(0,60)}${soru.length>60?'...':''}</td>`;
+                    counts.forEach(c => detayTablo += `<td class="border p-2">${c}</td>`);
+                    detayTablo += `</tr>`;
+                });
+            });
+            detayTablo += `</tbody></table></div>`;
+            report += detayTablo;
             document.getElementById('detailedReport').innerHTML = report;
         }
 
@@ -1269,7 +1326,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loadAdminDashboard() {
             try {
                 if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromFirebase();
+                    systemData.surveyData = await loadFromJSONBin();
                 }
                 
                 const companies = systemData.surveyData.companies || {};
@@ -1282,7 +1339,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadCompanyList();
             } catch (error) {
                 console.error('Admin dashboard yükleme hatası:', error);
-                // Kullanıcıya hata gösterme, sadece konsola yaz
+                showModal('❌ Hata', 'Yönetici paneli yüklenirken hata oluştu.');
             }
         }
 
@@ -1346,7 +1403,7 @@ async function toggleCompanyStatus(companyKey) {
     if (!systemData.surveyData || !systemData.surveyData.companies[companyKey]) return;
     const company = systemData.surveyData.companies[companyKey];
     company.status = company.status === 'Aktif' ? 'Pasif' : 'Aktif';
-    const saveResult = await saveToFirebase(systemData.surveyData);
+    const saveResult = await saveToJSONBin(systemData.surveyData);
     if (saveResult.success) {
         loadCompanyList();
     } else {
@@ -1365,7 +1422,7 @@ async function toggleCompanyStatus(companyKey) {
             const newPassword = generateCompanyPassword();
             systemData.surveyData.companies[companyKey].password = newPassword;
             
-            const saveResult = await saveToFirebase(systemData.surveyData);
+            const saveResult = await saveToJSONBin(systemData.surveyData);
             if (saveResult.success) {
                 loadCompanyList();
                 showModal('🔄 Şifre Yenilendi', `${systemData.surveyData.companies[companyKey].name} için yeni şifre: <code>${newPassword}</code>`);
@@ -1396,7 +1453,7 @@ async function toggleCompanyStatus(companyKey) {
         async function showAdminCompanyReport(companyName) {
             try {
                 if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromFirebase();
+                    systemData.surveyData = await loadFromJSONBin();
                 }
                 
                 const companySurveys = systemData.surveyData.responses.filter(s => 
