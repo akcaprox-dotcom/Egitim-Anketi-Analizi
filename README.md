@@ -37,20 +37,30 @@ async function loadFromFirebase() {
 // Firebase'e veri yazma
 async function saveToFirebase(data) {
     try {
-        const response = await fetch(FIREBASE_CONFIG.baseUrl + FIREBASE_CONFIG.dataPath, {
+        const url = FIREBASE_CONFIG.baseUrl + FIREBASE_CONFIG.dataPath;
+        console.log('[Firebase] PUT isteği başlatılıyor:', url);
+        const response = await fetch(url, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         });
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error('Firebase veri yazma hatası: ' + response.status + ' - ' + errorText);
+        console.log('[Firebase] Yanıt status:', response.status, response.statusText);
+        let responseBody = '';
+        try {
+            responseBody = await response.text();
+        } catch (e) {
+            responseBody = '[Yanıt okunamadı]';
         }
-        return { success: true };
+        console.log('[Firebase] Yanıt gövdesi:', responseBody);
+        if (!response.ok) {
+            throw new Error('Firebase veri yazma hatası: ' + response.status + ' - ' + responseBody);
+        }
+        return { success: true, responseBody };
     } catch (error) {
-        console.error('Firebase veri yazma hatası:', error);
+        console.error('[Firebase] VERİ YAZMA HATASI:', error);
+        alert('[Firebase] Veri yazma hatası!\n' + error.message);
         return { success: false, error: error.message };
     }
 }
