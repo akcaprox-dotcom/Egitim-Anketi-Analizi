@@ -1028,10 +1028,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     duration: document.getElementById('timeElapsed').textContent.split(': ')[1] || '00:00'
                 };
                 
-                if (!systemData.surveyData.responses) {
-                    systemData.surveyData.responses = [];
+                if (!systemData.surveyData.responses || typeof systemData.surveyData.responses !== 'object' || Array.isArray(systemData.surveyData.responses)) {
+                    systemData.surveyData.responses = {};
                 }
-                systemData.surveyData.responses.push(surveyResponse);
+                systemData.surveyData.responses[surveyResponse.id] = surveyResponse;
                 
                 if (!systemData.surveyData.statistics) {
                     systemData.surveyData.statistics = {
@@ -1041,16 +1041,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                 }
                 
-                systemData.surveyData.statistics.totalResponses = systemData.surveyData.responses.length;
+                const allResponses = Object.values(systemData.surveyData.responses);
+                systemData.surveyData.statistics.totalResponses = allResponses.length;
                 systemData.surveyData.statistics.averageScore = (
-                    systemData.surveyData.responses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
-                    systemData.surveyData.responses.length
+                    allResponses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
+                    (allResponses.length || 1)
                 ).toFixed(2);
                 systemData.surveyData.statistics.lastUpdated = new Date().toISOString();
-                
+
                 if (companyResult && systemData.surveyData.companies[companyResult.key]) {
                     systemData.surveyData.companies[companyResult.key].totalResponses = 
-                        systemData.surveyData.responses.filter(r => 
+                        allResponses.filter(r => 
                             r.companyName.toLowerCase() === companyName.toLowerCase()
                         ).length;
                 }
@@ -1379,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 const companies = systemData.surveyData.companies || {};
-                const responses = systemData.surveyData.responses || [];
+                const responses = Object.values(systemData.surveyData.responses || {});
                 
                 document.getElementById('totalCompanies').textContent = Object.keys(companies).length;
                 document.getElementById('activeSurveys').textContent = Object.keys(companies).length;
@@ -1399,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             const companies = systemData.surveyData.companies;
-            const responses = systemData.surveyData.responses || [];
+            const responses = Object.values(systemData.surveyData.responses || {});
             // Şirketleri alfabetik sırala
             const sortedCompanies = Object.entries(companies).sort((a, b) => {
                 const nameA = a[1].name.toLowerCase();
@@ -1997,7 +1998,7 @@ async function toggleCompanyStatus(companyKey) {
 
         function loadParticipantTable() {
             if (!loggedInCompany || !systemData.surveyData) return;
-            const companySurveys = systemData.surveyData.responses.filter(s => 
+            const companySurveys = Object.values(systemData.surveyData.responses || {}).filter(s => 
                 s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
             );
             // DÜZELTME: Doğru tbody id'si
