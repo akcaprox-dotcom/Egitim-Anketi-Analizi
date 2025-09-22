@@ -65,7 +65,6 @@ async function saveToFirebase(data) {
     }
 }
 </script>
-<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -144,9 +143,9 @@ async function saveToFirebase(data) {
                 <div class="bg-yellow-50 border border-yellow-300 rounded p-3 mb-3">
                     <h3 class="font-semibold text-yellow-800 mb-2 text-sm">⚠️ Veri Koruma Beyanı</h3>
                     <div class="text-xs text-yellow-700 space-y-1">
-                        <p>• Verileriniz güvenli bir şekilde saklanır ve üçüncü taraflarla paylaşılmaz.</p>
+                        <p>• Verileriniz <b>Google Firebase</b> bulut altyapısında güvenli bir şekilde saklanır ve üçüncü taraflarla paylaşılmaz.</p>
                         <p>• Anket sonuçları sadece kurum yetkilileri tarafından görüntülenebilir.</p>
-                        <p>• Sistem güvenliği hizmet sağlayıcıya aittir.</p>
+                        <p>• Sistem güvenliği hizmet sağlayıcıya (<b>Firebase</b>) aittir.</p>
                         <p>• Hack, veri ihlali vb. güvenlik olaylarından kaynaklanan bilgi erişimlerinin sorumluluğu Akça Pro X'e ait değildir.</p>
                     </div>
                 </div>
