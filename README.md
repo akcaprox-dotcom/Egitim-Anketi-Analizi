@@ -1976,27 +1976,23 @@ async function toggleCompanyStatus(companyKey) {
 
         function loadParticipantTable() {
             if (!loggedInCompany || !systemData.surveyData) return;
-            
             const companySurveys = systemData.surveyData.responses.filter(s => 
                 s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
             );
-            
-            const tbody = document.getElementById('participantTableBody');
-            
+            // DÜZELTME: Doğru tbody id'si
+            const tbody = document.getElementById('participantListBody');
+            if (!tbody) return;
             if (companySurveys.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Henüz katılımcı bulunmuyor.</td></tr>';
                 return;
             }
-            
             tbody.innerHTML = companySurveys.map(survey => {
                 const displayName = (survey.firstName && survey.lastName) ? 
                     `${survey.firstName} ${survey.lastName}` : 
                     (survey.firstName || survey.lastName || 'İsimsiz');
-                
                 const avgScore = parseFloat(survey.averageScore);
                 let evaluation = '';
                 let evaluationColor = '';
-                
                 if (avgScore < 2.5) {
                     evaluation = 'Düşük';
                     evaluationColor = 'text-red-600';
@@ -2007,7 +2003,6 @@ async function toggleCompanyStatus(companyKey) {
                     evaluation = 'Yüksek';
                     evaluationColor = 'text-green-600';
                 }
-                
                 return `
                     <tr class="hover:bg-gray-50">
                         <td class="px-3 py-2">${displayName}</td>
