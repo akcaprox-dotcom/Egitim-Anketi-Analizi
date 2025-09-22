@@ -931,8 +931,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Kurum kontrol ediliyor:', companyName);
                 if (!systemData.surveyData) {
                     let loaded = await loadFromFirebase();
-                    // Eğer null veya undefined dönerse, boş obje oluştur
-                    if (!loaded) {
+                    // Eğer null, undefined veya doğrudan null dönerse, boş obje oluştur
+                    if (!loaded || typeof loaded !== 'object' || loaded === null) {
                         loaded = {
                             surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
                             createdAt: new Date().toISOString(),
@@ -947,8 +947,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     systemData.surveyData = loaded;
                 }
-                // companies alanı yoksa mutlaka oluştur
-                if (!systemData.surveyData.companies) {
+                // companies alanı yoksa veya null ise mutlaka oluştur
+                if (!systemData.surveyData.companies || typeof systemData.surveyData.companies !== 'object') {
                     systemData.surveyData.companies = {};
                 }
                 const existingCompany = Object.entries(systemData.surveyData.companies)
