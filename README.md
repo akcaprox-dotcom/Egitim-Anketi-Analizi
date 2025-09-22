@@ -37,30 +37,20 @@ async function loadFromFirebase() {
 // Firebase'e veri yazma
 async function saveToFirebase(data) {
     try {
-        const url = FIREBASE_CONFIG.baseUrl + FIREBASE_CONFIG.dataPath;
-        console.log('[Firebase] PUT isteği başlatılıyor:', url);
-        const response = await fetch(url, {
+        const response = await fetch(FIREBASE_CONFIG.baseUrl + FIREBASE_CONFIG.dataPath, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         });
-        console.log('[Firebase] Yanıt status:', response.status, response.statusText);
-        let responseBody = '';
-        try {
-            responseBody = await response.text();
-        } catch (e) {
-            responseBody = '[Yanıt okunamadı]';
-        }
-        console.log('[Firebase] Yanıt gövdesi:', responseBody);
         if (!response.ok) {
-            throw new Error('Firebase veri yazma hatası: ' + response.status + ' - ' + responseBody);
+            const errorText = await response.text();
+            throw new Error('Firebase veri yazma hatası: ' + response.status + ' - ' + errorText);
         }
-        return { success: true, responseBody };
+        return { success: true };
     } catch (error) {
-        console.error('[Firebase] VERİ YAZMA HATASI:', error);
-        alert('[Firebase] Veri yazma hatası!\n' + error.message);
+        console.error('Firebase veri yazma hatası:', error);
         return { success: false, error: error.message };
     }
 }
@@ -304,9 +294,8 @@ async function saveToFirebase(data) {
                             </div>
                         </div>
                     </div>
-                    <!-- SWOT Analizi Tablosu (Rapor Ekranı) GİZLENDİ -->
-                    <div style="display:none">
-                        <!-- SWOT tablosu kodu burada, görünmez -->
+                    <!-- SWOT Analizi Tablosu (Rapor Ekranı) -->
+                    <div class="bg-white border rounded-lg p-4 mb-6">
                         <h4 class="font-semibold text-gray-800 mb-4 text-lg">SWOT Analizi</h4>
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm text-center border border-gray-300">
@@ -939,24 +928,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async function createCompanyIfNotExists(companyName) {
             try {
-                if (!systemData.surveyData) await loadFromFirebase();
-                // companies alanı yoksa her zaman oluştur
-                if (!systemData.surveyData || typeof systemData.surveyData !== 'object') systemData.surveyData = {};
-                if (!systemData.surveyData.companies || typeof systemData.surveyData.companies !== 'object') systemData.surveyData.companies = {};
-                // Mevcut şirket var mı kontrol et
-                const existingCompany = Object.entries(systemData.surveyData.companies)
-                    .find(([key, company]) => company.name && company.name.toLowerCase() === companyName.toLowerCase());
+                console.log('Kurum kontrol ediliyor:', companyName);
+                if (!systemData.surveyData) {
+                    systemData.surveyData = await loadFromFirebase();
+                }
+                const existingCompany = Object.entries(systemData.surveyData.companies || {})
+                    .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
                 if (existingCompany) {
                     // Eski kurumda status yoksa ekle
                     if (!existingCompany[1].status) {
                         existingCompany[1].status = 'Aktif';
                         await saveToFirebase(systemData.surveyData);
                     }
+                    console.log('Mevcut kurum bulundu:', existingCompany[1]);
                     return { success: true, key: existingCompany[0], password: existingCompany[1].password };
                 }
-                // Yeni şirket oluştur
                 const companyKey = companyName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10) + '-' + Date.now();
                 const newPassword = generateCompanyPassword();
+                if (!systemData.surveyData.companies) {
+                    systemData.surveyData.companies = {};
+                }
                 systemData.surveyData.companies[companyKey] = {
                     name: companyName,
                     password: newPassword,
@@ -971,6 +962,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return { success: false, error: saveResult.error };
                 }
             } catch (error) {
+                console.error('Kurum oluşturma hatası:', error);
                 return { success: false, error: error.message };
             }
         }
@@ -1202,113 +1194,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('detailedReport').innerHTML = '<p class="text-gray-500 text-center py-8 text-lg">Henüz anket verisi bulunmuyor.</p>';
                 return;
             }
-
-            // Eğitim anketine uygun grup ve kategori başlıkları
-            const groups = [
-                {
-                    name: 'Öğrenci',
-                    categories: [
-                        'Okul Ortamı ve Konfor',
-                        'Dersler ve Eğitim Kalitesi',
-                        'Okul Yönetimi ve Güven',
-                        'Sosyal Gelişim ve Gelecek',
-                        'Eğitimde Teknoloji ve Yenilenme'
-                    ]
-                },
-                {
-                    name: 'Öğretmen',
-                    categories: [
-                        'Eğitim Ortamı ve Kaynaklar',
-                        'Yönetim ve İletişim',
-                        'Mesleki Gelişim ve Kariyer',
-                        'Veli İlişkileri ve Geri Bildirim',
-                        'Eğitimde Teknoloji ve Yenilenme'
-                    ]
-                },
-                {
-                    name: 'Veli/Ebeveyn',
-                    categories: [
-                        'Eğitim Kalitesi ve Akademik Gelişim',
-                        'Okul Yönetimi ve İletişim',
-                        'Öğretmenler ve Rehberlik Hizmetleri',
-                        'Okul Ortamı ve Olanaklar',
-                        'Eğitimde Teknoloji ve Gelecek'
-                    ]
-                }
-            ];
-            const satisfactionLabels = ['Çok Memnunum', 'Memnun', 'Kararsızım', 'Memnun Değilim', 'Hiç Memnun Değilim'];
-            // Soru index aralıkları (her kategori 10 soru)
-            const groupRanges = {
-                'Öğrenci': [0, 49],
-                'Öğretmen': [50, 99],
-                'Veli/Ebeveyn': [100, 149]
-            };
-            function getCategoryIndexes(group, catIdx) {
-                const start = groupRanges[group][0] + catIdx * 10;
-                const end = start + 9;
-                return [start, end];
-            }
-            // Frekans tablosu oluştur
-            let table = `<div class="overflow-x-auto"><table class="min-w-full text-xs text-center border border-gray-300 mb-6">
-                <thead>
-                    <tr class="bg-gray-100">
-                        <th class="px-2 py-1">Grup / Soru</th>
-                        ${satisfactionLabels.map(l => `<th class="px-2 py-1">${l}</th>`).join('')}
-                    </tr>
-                </thead>
-                <tbody>`;
-            groups.forEach(group => {
-                // Grup genel yüzdeleri
-                const groupSurveys = surveys.filter(s => s.jobType === group.name);
-                let groupCounts = [0, 0, 0, 0, 0];
-                let groupTotal = 0;
-                groupSurveys.forEach(s => {
-                    s.answers.forEach(a => {
-                        groupCounts[a.score - 1]++;
-                        groupTotal++;
-                    });
-                });
-                let groupPercents = groupCounts.map(c => groupTotal ? (c * 100 / groupTotal).toFixed(1) + '%' : '0.0%');
-                table += `<tr class="font-bold bg-gray-50"><td>${group.name}</td>${groupPercents.map(p => `<td>${p}</td>`).join('')}</tr>`;
-                // Kategoriler
-                group.categories.forEach((cat, catIdx) => {
-                    let catCounts = [0, 0, 0, 0, 0];
-                    let catTotal = 0;
-                    groupSurveys.forEach(s => {
-                        const [start, end] = getCategoryIndexes(group.name, catIdx);
-                        for (let i = start; i <= end && i < s.answers.length; i++) {
-                            const score = s.answers[i]?.score;
-                            if (score >= 1 && score <= 5) {
-                                catCounts[score - 1]++;
-                                catTotal++;
-                            }
-                        }
-                    });
-                    // Kategori toplamı 0 ise, grup toplamından paylaştır
-                    if (catTotal === 0 && groupTotal > 0) {
-                        table += `<tr><td>${cat}</td>${groupCounts.map(c => `<td>${c}</td>`).join('')}</tr>`;
-                    } else {
-                        table += `<tr><td>${cat}</td>${catCounts.map(c => `<td>${c}</td>`).join('')}</tr>`;
-                    }
-                });
-            });
-            table += '</tbody></table></div>';
-
-            // Eski özet raporları da koru
+            
             const positionData = {};
             surveys.forEach(s => {
                 positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
             });
+            
             const satisfactionLevels = ['Düşük (1-2)', 'Orta (3)', 'Yüksek (4-5)'];
             const satisfactionCounts = [0, 0, 0];
+            
             surveys.forEach(s => {
                 const avgScore = parseFloat(s.averageScore);
                 if (avgScore < 2.5) satisfactionCounts[0]++;
                 else if (avgScore >= 2.5 && avgScore < 3.5) satisfactionCounts[1]++;
                 else satisfactionCounts[2]++;
             });
+            
             const report = `
-                ${table}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-blue-50 p-6 rounded-lg">
                         <h4 class="font-semibold text-blue-800 mb-4 text-lg">👥 Pozisyon Dağılımı</h4>
@@ -1319,6 +1221,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>`
                         ).join('')}
                     </div>
+                    
                     <div class="bg-green-50 p-6 rounded-lg">
                         <h4 class="font-semibold text-green-800 mb-4 text-lg">📊 Değerlendirme Seviyeleri</h4>
                         ${satisfactionLevels.map((level, i) => 
@@ -1329,6 +1232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ).join('')}
                     </div>
                 </div>
+                
                 <div class="mt-6 bg-gray-50 p-6 rounded-lg">
                     <h4 class="font-semibold text-gray-800 mb-3 text-lg">📈 Özet</h4>
                     <p class="text-base text-gray-700">
@@ -1337,6 +1241,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </p>
                 </div>
             `;
+            
             document.getElementById('detailedReport').innerHTML = report;
         }
 
@@ -1838,26 +1743,16 @@ async function toggleCompanyStatus(companyKey) {
         }
 
         function generateCharts(surveys) {
-            if (!window._charts) window._charts = {};
-            if (surveys.length === 0) {
-                // Destroy all charts if no data
-                ['positionChart','satisfactionChart','timeChart','trendChart'].forEach(key => {
-                    if (window._charts[key]) {
-                        window._charts[key].destroy();
-                        window._charts[key] = null;
-                    }
-                });
-                return;
-            }
-
+            if (surveys.length === 0) return;
+            
             // Pozisyon grafiği
             const positionData = {};
             surveys.forEach(s => {
                 positionData[s.jobType] = (positionData[s.jobType] || 0) + 1;
             });
+            
             const positionCtx = document.getElementById('positionChart').getContext('2d');
-            if (window._charts.positionChart) window._charts.positionChart.destroy();
-            window._charts.positionChart = new Chart(positionCtx, {
+            new Chart(positionCtx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(positionData),
@@ -1874,7 +1769,7 @@ async function toggleCompanyStatus(companyKey) {
                     }
                 }
             });
-
+            
             // Değerlendirme grafiği
             const satisfactionCounts = [0, 0, 0];
             surveys.forEach(s => {
@@ -1883,9 +1778,9 @@ async function toggleCompanyStatus(companyKey) {
                 else if (avgScore < 3.5) satisfactionCounts[1]++;
                 else satisfactionCounts[2]++;
             });
+            
             const satisfactionCtx = document.getElementById('satisfactionChart').getContext('2d');
-            if (window._charts.satisfactionChart) window._charts.satisfactionChart.destroy();
-            window._charts.satisfactionChart = new Chart(satisfactionCtx, {
+            new Chart(satisfactionCtx, {
                 type: 'bar',
                 data: {
                     labels: ['Düşük', 'Orta', 'Yüksek'],
@@ -1905,7 +1800,7 @@ async function toggleCompanyStatus(companyKey) {
                     }
                 }
             });
-
+            
             // Süre dağılımı grafiği
             const timeCounts = { '0-5dk': 0, '5-10dk': 0, '10dk+': 0 };
             surveys.forEach(s => {
@@ -1915,9 +1810,9 @@ async function toggleCompanyStatus(companyKey) {
                 else if (minutes <= 10) timeCounts['5-10dk']++;
                 else timeCounts['10dk+']++;
             });
+            
             const timeCtx = document.getElementById('timeChart').getContext('2d');
-            if (window._charts.timeChart) window._charts.timeChart.destroy();
-            window._charts.timeChart = new Chart(timeCtx, {
+            new Chart(timeCtx, {
                 type: 'pie',
                 data: {
                     labels: Object.keys(timeCounts),
@@ -1934,7 +1829,7 @@ async function toggleCompanyStatus(companyKey) {
                     }
                 }
             });
-
+            
             // Puan dağılımı grafiği
             const scoreRanges = { '1-2': 0, '2-3': 0, '3-4': 0, '4-5': 0 };
             surveys.forEach(s => {
@@ -1944,9 +1839,9 @@ async function toggleCompanyStatus(companyKey) {
                 else if (avgScore < 4) scoreRanges['3-4']++;
                 else scoreRanges['4-5']++;
             });
+            
             const trendCtx = document.getElementById('trendChart').getContext('2d');
-            if (window._charts.trendChart) window._charts.trendChart.destroy();
-            window._charts.trendChart = new Chart(trendCtx, {
+            new Chart(trendCtx, {
                 type: 'line',
                 data: {
                     labels: Object.keys(scoreRanges),
@@ -1986,23 +1881,27 @@ async function toggleCompanyStatus(companyKey) {
 
         function loadParticipantTable() {
             if (!loggedInCompany || !systemData.surveyData) return;
+            
             const companySurveys = systemData.surveyData.responses.filter(s => 
                 s.companyName.toLowerCase() === loggedInCompany.name.toLowerCase()
             );
-            // DÜZELTME: Doğru tbody id'si
-            const tbody = document.getElementById('participantListBody');
-            if (!tbody) return;
+            
+            const tbody = document.getElementById('participantTableBody');
+            
             if (companySurveys.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Henüz katılımcı bulunmuyor.</td></tr>';
                 return;
             }
+            
             tbody.innerHTML = companySurveys.map(survey => {
                 const displayName = (survey.firstName && survey.lastName) ? 
                     `${survey.firstName} ${survey.lastName}` : 
                     (survey.firstName || survey.lastName || 'İsimsiz');
+                
                 const avgScore = parseFloat(survey.averageScore);
                 let evaluation = '';
                 let evaluationColor = '';
+                
                 if (avgScore < 2.5) {
                     evaluation = 'Düşük';
                     evaluationColor = 'text-red-600';
@@ -2013,6 +1912,7 @@ async function toggleCompanyStatus(companyKey) {
                     evaluation = 'Yüksek';
                     evaluationColor = 'text-green-600';
                 }
+                
                 return `
                     <tr class="hover:bg-gray-50">
                         <td class="px-3 py-2">${displayName}</td>
