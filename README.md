@@ -440,15 +440,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let loggedInCompany = null;
         let isAdminLoggedIn = false;
 
-        // JSONBin.io konfigürasyonu
-        const JSONBIN_CONFIG = {
-            apiKey: '$2a$10$Vre/Nl1Aa1vrK2xY1NHYguabG45SOU1sMt3dnh.UJYpdBoQSdnz1.',
-            accessKey: '$2a$10$SCDSdHz/rW/Z3Q6EWaB68uSJR2GAhE3pjG/i3.gJEhKsviO.yl6DC',
-            binId: '68ce6bf543b1c97be9491ab1',
-            baseUrl: 'https://api.jsonbin.io/v3',
-            maxRetries: 3,
-            retryDelay: 1000
-        };
+
+        // Firebase Realtime Database ayarları
+        const FIREBASE_DB_URL = 'https://akcaprox-anket-default-rtdb.europe-west1.firebasedatabase.app';
+        // responses artık bir nesne olarak tutulacak (array değil)
 
         // Soru setleri
         const questions = {
@@ -873,36 +868,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // JSONBin.io API fonksiyonları
-        async function createNewBin() {
-            throw new Error('Sabit binId ile çalışıyor, yeni bin oluşturulamaz.');
-        }
 
-        async function loadFromJSONBin() {
+        // Firebase'den verileri yükle
+        async function loadFromFirebase() {
             try {
-                if (!JSONBIN_CONFIG.binId) {
-                    throw new Error('Sabit binId tanımlı değil!');
-                }
-                console.log('JSONBin\'den veri yükleniyor... Bin ID:', JSONBIN_CONFIG.binId);
-                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/b/${JSONBIN_CONFIG.binId}/latest`, {
-                    headers: {
-                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
-                        'X-Access-Key': JSONBIN_CONFIG.accessKey,
-                        'X-Bin-Meta': 'false'
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    systemData.surveyData = data.record || data;
-                    return systemData.surveyData;
-                } else {
-                    throw new Error(`API Hatası: ${response.status}`);
-                }
+                const response = await fetch(`${FIREBASE_DB_URL}/surveyData.json`);
+                if (!response.ok) throw new Error('Firebase veri yükleme hatası');
+                const data = await response.json();
+                systemData.surveyData = data || {
+                    surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
+                    createdAt: new Date().toISOString(),
+                    responses: {},
+                    statistics: {
+                        totalResponses: 0,
+                        averageScore: 0,
+                        lastUpdated: new Date().toISOString()
+                    },
+                    companies: {}
+                };
+                return systemData.surveyData;
             } catch (error) {
-                console.error('JSONBin yükleme hatası:', error);
+                console.error('Firebase yükleme hatası:', error);
                 const defaultData = {
                     surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
                     createdAt: new Date().toISOString(),
-                    responses: [],
+                    responses: {},
                     statistics: {
                         totalResponses: 0,
                         averageScore: 0,
@@ -915,44 +905,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        async function saveToJSONBin(data, retryCount = 0) {
+        // Firebase'e PATCH ile veri kaydet (responses nesnesi olarak)
+        async function saveToFirebase(patchObj) {
             try {
-                if (!JSONBIN_CONFIG.binId) {
-                    throw new Error('Sabit binId tanımlı değil!');
-                }
-                console.log(`JSONBin'e veri kaydediliyor... Bin ID: ${JSONBIN_CONFIG.binId}`);
-                const response = await fetch(`${JSONBIN_CONFIG.baseUrl}/b/${JSONBIN_CONFIG.binId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_CONFIG.apiKey,
-                        'X-Access-Key': JSONBIN_CONFIG.accessKey,
-                        'X-Bin-Versioning': 'false'
-                    },
-                    body: JSON.stringify(data)
+                const response = await fetch(`${FIREBASE_DB_URL}/surveyData.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(patchObj)
                 });
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('JSONBin kaydetme başarılı:', result);
-                    return { success: true, data: result };
-                } else {
-                    const errorText = await response.text();
-                    console.error('JSONBin API hatası:', response.status, errorText);
-                    if (retryCount < JSONBIN_CONFIG.maxRetries && (response.status >= 500 || response.status === 429)) {
-                        console.log(`${JSONBIN_CONFIG.retryDelay}ms sonra yeniden denenecek...`);
-                        await new Promise(resolve => setTimeout(resolve, JSONBIN_CONFIG.retryDelay * (retryCount + 1)));
-                        return await saveToJSONBin(data, retryCount + 1);
-                    }
-                    return { success: false, error: `API Hatası: ${response.status} - ${errorText}` };
-                }
+                if (!response.ok) throw new Error('Firebase veri kaydetme hatası');
+                return { success: true };
             } catch (error) {
-                console.error('JSONBin bağlantı hatası:', error);
-                if (retryCount < JSONBIN_CONFIG.maxRetries) {
-                    console.log(`Ağ hatası - ${JSONBIN_CONFIG.retryDelay}ms sonra yeniden denenecek...`);
-                    await new Promise(resolve => setTimeout(resolve, JSONBIN_CONFIG.retryDelay * (retryCount + 1)));
-                    return await saveToJSONBin(data, retryCount + 1);
-                }
-                return { success: false, error: `Bağlantı Hatası: ${error.message}` };
+                console.error('Firebase kayıt hatası:', error);
+                return { success: false, error: error.message };
             }
         }
 
@@ -960,7 +925,7 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 console.log('Kurum kontrol ediliyor:', companyName);
                 if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromJSONBin();
+                    systemData.surveyData = await loadFromFirebase();
                 }
                 const existingCompany = Object.entries(systemData.surveyData.companies || {})
                     .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
@@ -968,7 +933,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Eski kurumda status yoksa ekle
                     if (!existingCompany[1].status) {
                         existingCompany[1].status = 'Aktif';
-                        await saveToJSONBin(systemData.surveyData);
+                        await saveToFirebase({ companies: systemData.surveyData.companies });
                     }
                     console.log('Mevcut kurum bulundu:', existingCompany[1]);
                     return { success: true, key: existingCompany[0], password: existingCompany[1].password };
@@ -985,7 +950,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     totalResponses: 0,
                     status: 'Aktif'
                 };
-                const saveResult = await saveToJSONBin(systemData.surveyData);
+                const saveResult = await saveToFirebase({ companies: systemData.surveyData.companies });
                 if (saveResult.success) {
                     return { success: true, key: companyKey, password: newPassword };
                 } else {
@@ -1009,25 +974,21 @@ document.addEventListener('DOMContentLoaded', function() {
         async function submitSurvey() {
             try {
                 console.log('Anket gönderiliyor...');
-                
                 const companyName = document.getElementById('companyName').value.trim();
                 const firstName = document.getElementById('firstName').value.trim() || 'Anonim';
                 const lastName = document.getElementById('lastName').value.trim() || 'Kullanıcı';
-                
                 if (!companyName || !selectedJobType || !answers || answers.length === 0) {
                     throw new Error('Eksik bilgi: Kurum adı, iş türü ve anket yanıtları gerekli');
                 }
-                
                 const companyResult = await createCompanyIfNotExists(companyName);
-                
                 if (!companyResult.success) {
                     throw new Error(`Kurum işlemi başarısız: ${companyResult.error}`);
                 }
-                
-                systemData.surveyData = await loadFromJSONBin();
-                
+                systemData.surveyData = await loadFromFirebase();
+                // Benzersiz bir key ile responses nesnesine ekle
+                const responseKey = 'survey_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 const surveyResponse = {
-                    id: 'survey_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    id: responseKey,
                     companyName: companyName,
                     firstName: firstName,
                     lastName: lastName,
@@ -1038,12 +999,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     averageScore: (answers.reduce((sum, answer) => sum + answer.score, 0) / answers.length).toFixed(2),
                     duration: document.getElementById('timeElapsed').textContent.split(': ')[1] || '00:00'
                 };
-                
                 if (!systemData.surveyData.responses) {
-                    systemData.surveyData.responses = [];
+                    systemData.surveyData.responses = {};
                 }
-                systemData.surveyData.responses.push(surveyResponse);
-                
+                systemData.surveyData.responses[responseKey] = surveyResponse;
+                // İstatistikleri güncelle
+                const allResponses = Object.values(systemData.surveyData.responses);
                 if (!systemData.surveyData.statistics) {
                     systemData.surveyData.statistics = {
                         totalResponses: 0,
@@ -1051,30 +1012,30 @@ document.addEventListener('DOMContentLoaded', function() {
                         lastUpdated: new Date().toISOString()
                     };
                 }
-                
-                systemData.surveyData.statistics.totalResponses = systemData.surveyData.responses.length;
+                systemData.surveyData.statistics.totalResponses = allResponses.length;
                 systemData.surveyData.statistics.averageScore = (
-                    systemData.surveyData.responses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / 
-                    systemData.surveyData.responses.length
+                    allResponses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / allResponses.length
                 ).toFixed(2);
                 systemData.surveyData.statistics.lastUpdated = new Date().toISOString();
-                
                 if (companyResult && systemData.surveyData.companies[companyResult.key]) {
-                    systemData.surveyData.companies[companyResult.key].totalResponses = 
-                        systemData.surveyData.responses.filter(r => 
+                    systemData.surveyData.companies[companyResult.key].totalResponses =
+                        allResponses.filter(r =>
                             r.companyName.toLowerCase() === companyName.toLowerCase()
                         ).length;
                 }
-                
-                const saveResult = await saveToJSONBin(systemData.surveyData);
-                
+                // Firebase'e responses, statistics ve companies patch olarak gönder
+                const saveResult = await saveToFirebase({
+                    responses: systemData.surveyData.responses,
+                    statistics: systemData.surveyData.statistics,
+                    companies: systemData.surveyData.companies
+                });
                 if (saveResult.success) {
                     document.getElementById('surveySection').innerHTML = `
                         <div class="text-center bg-green-50 p-10 rounded-lg border-2 border-green-200">
                             <div class="text-8xl mb-6">✅</div>
                             <h2 class="text-3xl font-bold text-green-800 mb-6">Anketiniz Başarıyla Kaydedildi!</h2>
                             <p class="text-green-700 mb-6 text-lg">
-                                Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde JSONBin.io sisteminde saklandı.
+                                Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde <b>Firebase</b> sisteminde saklandı.
                             </p>
                             <div class="bg-blue-50 p-6 rounded-lg border border-blue-200 mb-6">
                                 <p class="text-base text-blue-700">
@@ -1095,7 +1056,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     throw new Error(`Anket kaydedilemedi: ${saveResult.error}`);
                 }
-                
             } catch (error) {
                 console.error('Anket gönderme hatası:', error);
                 showModal('❌ Hata', `Anket gönderilirken bir hata oluştu:<br><br><strong>Hata:</strong> ${error.message}<br><br>Lütfen sayfayı yenileyip tekrar deneyin.`);
