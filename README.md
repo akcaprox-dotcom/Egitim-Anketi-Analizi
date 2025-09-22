@@ -1,4 +1,16 @@
 <script>
+// Şirket/okul anahtarlarını normalize etmek için fonksiyon
+function normalizeKey(str) {
+    return str
+        .toLocaleLowerCase('tr-TR')
+        .replace(/ö/g, 'o')
+        .replace(/ü/g, 'u')
+        .replace(/ş/g, 's')
+        .replace(/ı/g, 'i')
+        .replace(/ğ/g, 'g')
+        .replace(/ç/g, 'c')
+        .replace(/[^a-z0-9_-]/g, ''); // Sadece a-z, 0-9, _ ve - izin ver
+}
 // Firebase Realtime Database REST API ayarları
 const FIREBASE_CONFIG = {
     baseUrl: 'https://egitim-37c53-default-rtdb.europe-west1.firebasedatabase.app',
