@@ -6,6 +6,89 @@
     <title>Akça Pro X - Kurum Değerlendirme Anketi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .active-tab {
+            border: 3px solid #6366f1 !important;
+            background-color: #6366f1 !important;
+            color: white !important;
+            font-weight: bold !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3) !important;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Ana Navigasyon -->
+    <nav class="gradient-bg text-white p-3 shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
+            <div class="flex items-center gap-2">
+                <!-- Gizli yönetici erişimi -->
+                <div onclick="showModule('admin')" class="w-3 h-3 cursor-pointer opacity-15 hover:opacity-50 transition-opacity" title="">
+                    <div class="w-3 h-3 rounded-full border border-white/30 flex items-center justify-center animate-spin" style="animation-duration: 12s;">
+                        <div class="w-1 h-1 bg-white/40 rounded-full"></div>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold">Akça Pro X</h1>
+                    <p class="text-xs opacity-90">Kurum Değerlendirme Anketi</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="showModule('survey')" class="px-3 py-1 bg-white/20 rounded text-sm hover:bg-white/30 transition-colors">📊 Anket</button>
+                <button onclick="showModule('company')" class="px-3 py-1 bg-white/20 rounded text-sm hover:bg-white/30 transition-colors">🏢 Kurum Portalı</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Anket Modülü -->
+    <div id="surveyModule" class="max-w-5xl mx-auto p-2 md:p-4">
+        <div class="bg-white shadow-xl rounded-2xl max-w-2xl mx-auto p-4 md:p-8">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl md:text-3xl font-extrabold text-gray-800 mb-1 tracking-tight">Kurum Değerlendirme Anketi</h2>
+                <p class="text-gray-600 mb-2 text-base md:text-lg">Görüşleriniz bizim için değerli</p>
+                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">v3.0.0 - Firebase Entegre</span>
+            </div>
+
+            <!-- Sorumluluk Reddi -->
+            <div id="disclaimerSection" class="mb-4">
+                <div class="bg-yellow-50 border border-yellow-300 rounded p-3 mb-3">
+                    <h3 class="font-semibold text-yellow-800 mb-2 text-sm">⚠️ Veri Koruma Beyanı</h3>
+                    <div class="text-xs text-yellow-700 space-y-1">
+                        <p>• Verileriniz <b>Google Firebase</b> bulut altyapısında güvenli bir şekilde saklanır ve üçüncü taraflarla paylaşılmaz.</p>
+                        <p>• Anket sonuçları sadece kurum yetkilileri tarafından görüntülenebilir.</p>
+                        <p>• Sistem güvenliği hizmet sağlayıcıya (<b>Firebase</b>) aittir.</p>
+                        <p>• Hack, veri ihlali vb. güvenlik olaylarından kaynaklanan bilgi erişimlerinin sorumluluğu Akça Pro X'e ait değildir.</p>
+                    </div>
+                </div>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="acceptDisclaimer" class="w-4 h-4 text-purple-600">
+                    <span class="text-xs font-medium">Veri koruma beyanını kabul ediyorum</span>
+                </label>
             </div>
 
             <!-- Şirket Bilgileri -->
@@ -126,8 +209,8 @@
                             <span class="mx-1">-</span>
                             <input type="date" id="reportEndDate" class="border rounded px-2 py-1 text-sm" />
                             <button onclick="filterByDateRange()" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">Tarihe Göre Rapor</button>
-                            <button onclick="showPDFReport(true)" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm" style="display:none">📄 PDF Göster (Filtreli)</button>
-                            <button onclick="showPDFReport(false)" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm" style="display:none">📄 PDF Göster (Tümü)</button>
+                            <button onclick="showPDFReport(true)" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm" style="display:none !important">📄 PDF Göster (Filtreli)</button>
+                            <button onclick="showPDFReport(false)" class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm" style="display:none !important">📄 PDF Göster (Tümü)</button>
                         </div>
                     </div>
                     
@@ -358,8 +441,8 @@ document.addEventListener('DOMContentLoaded', function() {
         let isAdminLoggedIn = false;
 
 
-        // Firebase Realtime Database ayarları
-        const FIREBASE_DB_URL = 'https://akcaprox-anket-default-rtdb.europe-west1.firebasedatabase.app';
+    // Firebase Realtime Database ayarları
+    const FIREBASE_DB_URL = 'https://egitim-37c53-default-rtdb.europe-west1.firebasedatabase.app';
         // responses artık bir nesne olarak tutulacak (array değil)
 
         // Soru setleri
@@ -784,7 +867,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateProgress();
         }
 
-        // JSONBin.io API fonksiyonları
+
 
         // Firebase'den verileri yükle
         async function loadFromFirebase() {
@@ -1280,12 +1363,7 @@ async function toggleCompanyStatus(companyKey) {
     if (!systemData.surveyData || !systemData.surveyData.companies[companyKey]) return;
     const company = systemData.surveyData.companies[companyKey];
     company.status = company.status === 'Aktif' ? 'Pasif' : 'Aktif';
-    // JSONBin kaldırıldı, burada bir işlem yapılmıyor (Firebase kullanılıyor)
-    if (saveResult.success) {
-        loadCompanyList();
-    } else {
-        showModal('❌ Hata', 'Durum güncellenemedi: ' + saveResult.error);
-    }
+
 }
 
         // Canlı filtreleme için
@@ -1299,13 +1377,7 @@ async function toggleCompanyStatus(companyKey) {
             const newPassword = generateCompanyPassword();
             systemData.surveyData.companies[companyKey].password = newPassword;
             
-            // JSONBin kaldırıldı, burada bir işlem yapılmıyor (Firebase kullanılıyor)
-            if (saveResult.success) {
-                loadCompanyList();
-                showModal('🔄 Şifre Yenilendi', `${systemData.surveyData.companies[companyKey].name} için yeni şifre: <code>${newPassword}</code>`);
-            } else {
-                showModal('❌ Hata', `Şifre yenileme sırasında hata oluştu: ${saveResult.error}`);
-            }
+
         }
 
         function showModal(title, content) {
@@ -1615,7 +1687,7 @@ async function toggleCompanyStatus(companyKey) {
                 ${dateInfo ? `<div class='date-info'>📅 Filtrelenmiş Rapor${dateInfo}</div>` : ''}
                 <div class='summary-grid'>
                 <!-- SWOT Analizi Tablosu (PDF) -->
-                <div class='section'>
+                <div class='section' style="display:none !important;">
                     <div class='section-title'>SWOT Analizi</div>
                     <table style="width:100%;border-collapse:collapse;margin:24px 0;">
                         <tr>
