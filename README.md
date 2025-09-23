@@ -877,23 +877,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3 class="text-base sm:text-lg font-semibold mb-4 text-gray-800">${question}</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 w-full">
                         <button onclick="selectAnswer(1)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 bg-gray-50 shadow-sm">
-                            <span class="text-xl sm:text-2xl mb-1">😞</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-red-500">1</span>
                             <span class="font-medium text-gray-700 leading-tight text-center">Hiç Memnun<br>Değilim</span>
                         </button>
                         <button onclick="selectAnswer(2)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-orange-200 hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 shadow-sm">
-                            <span class="text-xl sm:text-2xl mb-1">😐</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-orange-500">2</span>
                             <span class="font-medium text-gray-700 leading-tight text-center">Memnun<br>Değilim</span>
                         </button>
                         <button onclick="selectAnswer(3)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 bg-gray-50 shadow-sm col-span-2 sm:col-span-1">
-                            <span class="text-xl sm:text-2xl mb-1">😊</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-yellow-600">3</span>
                             <span class="font-medium text-gray-700 leading-tight text-center">Kararsızım</span>
                         </button>
                         <button onclick="selectAnswer(4)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 shadow-sm">
-                            <span class="text-xl sm:text-2xl mb-1">😄</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-green-500">4</span>
                             <span class="font-medium text-gray-700 leading-tight text-center">Memnunum</span>
                         </button>
                         <button onclick="selectAnswer(5)" class="answer-btn flex flex-col items-center justify-center py-3 px-2 text-xs sm:text-base rounded-xl border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 shadow-sm">
-                            <span class="text-xl sm:text-2xl mb-1">🤩</span>
+                            <span class="text-xl sm:text-2xl mb-1 font-bold text-blue-500">5</span>
                             <span class="font-medium text-gray-700 leading-tight text-center">Çok Memnunum</span>
                         </button>
                     </div>
@@ -1305,7 +1305,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             // Kategori Bazlı Özet Tablosu (Sadece Grup Özetleri)
-            const memnuniyetLabels = ['Çok Memnunum', 'Memnun', 'Kararsızım', 'Memnun Değilim', 'Hiç Memnun Değilim'];
+            const memnuniyetLabels = ['5 - Çok Memnunum', '4 - Memnunum', '3 - Kararsızım', '2 - Memnun Değilim', '1 - Hiç Memnun Değilim'];
             const memnuniyetMap = {5:0, 4:1, 3:2, 2:3, 1:4};
             
             // Kategori tanımları
@@ -1370,11 +1370,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <thead>
                             <tr>
                                 <th>Grup / Kategori</th>
-                                <th>Çok Memnunum</th>
-                                <th>Memnunum</th>
-                                <th>Kararsızım</th>
-                                <th>Memnun Değilim</th>
-                                <th>Hiç Memnun Değilim</th>
+                                <th>5 - Çok Memnunum</th>
+                                <th>4 - Memnunum</th>
+                                <th>3 - Kararsızım</th>
+                                <th>2 - Memnun Değilim</th>
+                                <th>1 - Hiç Memnun Değilim</th>
                             </tr>
                         </thead>
                         <tbody>`;
@@ -2400,23 +2400,23 @@ async function toggleCompanyStatus(companyKey) {
                 if (avgScore >= 4.5) {
                     evaluation = 'Çok Memnun';
                     evaluationColor = 'text-green-600';
-                    evaluationIcon = '😄';
+                    evaluationIcon = '5';
                 } else if (avgScore >= 3.5) {
                     evaluation = 'Memnun';
                     evaluationColor = 'text-green-500';
-                    evaluationIcon = '😊';
+                    evaluationIcon = '4';
                 } else if (avgScore >= 2.5) {
                     evaluation = 'Orta';
                     evaluationColor = 'text-yellow-600';
-                    evaluationIcon = '😐';
+                    evaluationIcon = '3';
                 } else if (avgScore >= 1.5) {
                     evaluation = 'Düşük';
                     evaluationColor = 'text-orange-600';
-                    evaluationIcon = '😕';
+                    evaluationIcon = '2';
                 } else {
                     evaluation = 'Çok Düşük';
                     evaluationColor = 'text-red-600';
-                    evaluationIcon = '😞';
+                    evaluationIcon = '1';
                 }
                 
                 return `
@@ -2429,7 +2429,10 @@ async function toggleCompanyStatus(companyKey) {
                         </td>
                         <td class="px-3 py-2 text-center font-semibold">${avgScore.toFixed(1)}</td>
                         <td class="px-3 py-2 text-center ${evaluationColor} font-semibold">
-                            ${evaluationIcon} ${evaluation}
+                            <span class="inline-flex items-center gap-1">
+                                <span class="inline-block w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-sm font-bold flex items-center justify-center">${evaluationIcon}</span>
+                                ${evaluation}
+                            </span>
                         </td>
                         <td class="px-3 py-2 text-center text-sm text-gray-600">${new Date(survey.submittedAt).toLocaleDateString('tr-TR')}</td>
                     </tr>
