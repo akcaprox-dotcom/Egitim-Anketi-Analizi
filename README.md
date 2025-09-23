@@ -1288,29 +1288,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!systemData.surveyData) {
                     systemData.surveyData = await loadFromFirebase();
                 }
-                
                 const companies = systemData.surveyData.companies || {};
-                const responses = systemData.surveyData.responses || [];
-                
+                // responses hem dizi hem nesne olabileceği için Object.values ile normalize et
+                let responsesRaw = systemData.surveyData.responses || [];
+                let responses = Array.isArray(responsesRaw) ? responsesRaw : Object.values(responsesRaw);
                 document.getElementById('totalCompanies').textContent = Object.keys(companies).length;
                 document.getElementById('activeSurveys').textContent = Object.keys(companies).length;
                 document.getElementById('totalUsers').textContent = responses.length;
-                
-                loadCompanyList();
+                loadCompanyList(responses);
             } catch (error) {
                 console.error('Admin dashboard yükleme hatası:', error);
                 showModal('❌ Hata', 'Yönetici paneli yüklenirken hata oluştu.');
             }
         }
 
-        function loadCompanyList() {
+        function loadCompanyList(responses) {
             const tbody = document.getElementById('companyList');
             if (!systemData.surveyData || !systemData.surveyData.companies) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Henüz kurum kaydı bulunmuyor.</td></tr>';
                 return;
             }
             const companies = systemData.surveyData.companies;
-            const responses = systemData.surveyData.responses || [];
+            // responses parametresi gelmezse fallback olarak eski kodu kullan
+            if (!responses) {
+                let responsesRaw = systemData.surveyData.responses || [];
+                responses = Array.isArray(responsesRaw) ? responsesRaw : Object.values(responsesRaw);
+            }
             // Şirketleri alfabetik sırala
             const sortedCompanies = Object.entries(companies).sort((a, b) => {
                 const nameA = a[1].name.toLowerCase();
@@ -1330,7 +1333,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             tbody.innerHTML = filtered.map(([companyKey, company]) => {
                 const companySurveys = responses.filter(s =>
-                    s.companyName.toLowerCase() === company.name.toLowerCase()
+                    s.companyName && s.companyName.toLowerCase() === company.name.toLowerCase()
                 );
                 const status = company.status === 'Pasif' ? 'Pasif' : 'Aktif';
                 const statusColor = status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
