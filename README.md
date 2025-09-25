@@ -93,23 +93,39 @@
 
             <!-- Şirket Bilgileri -->
             <div id="companyInfoSection">
-                <!-- Google ile Giriş Yap butonu -->
-                <div class="mb-3 flex flex-col items-center">
+                <!-- Google ile Giriş Yap butonu (işletme.html hizası ve spacing) -->
+                <div class="mb-4 flex flex-col items-center">
                     <button id="googleSignInBtn" type="button" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded shadow hover:bg-gray-100 text-gray-700 font-semibold mb-2">
                         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> Google ile Giriş Yap
                     </button>
                     <div id="googleUserInfo" class="text-xs text-green-700 font-medium hidden"></div>
                 </div>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+                <div class="mb-4 flex flex-col sm:flex-row gap-2 items-center justify-center">
+                    <label class="flex items-center gap-2">
+                        <input type="radio" name="companyType" id="newCompanyRadio" checked>
+                        <span>🆕 Yeni Kurum</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="radio" name="companyType" id="existingCompanyRadio">
+                        <span>📋 Kayıtlı Kurum</span>
+                    </label>
+                </div>
+                <div class="mb-3" id="manualCompanyInput">
+                    <input id="companyName" type="text" placeholder="Kurum adı (Okul, Üniversite vb.)" class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div class="mb-3 hidden" id="existingCompanySelect">
+                    <select id="companyDropdown" class="w-full border-2 border-blue-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Kurum seçiniz...</option>
+                    </select>
+                </div>
                 <h3 class="text-base font-semibold text-gray-700 mb-3">Kurum ve Kişisel Bilgiler</h3>
-                <div class="mb-3">
+                <div class="mb-4">
                     <input type="text" id="companyName" placeholder="Kurum adınızı girin (Okul, Üniversite vb.)" 
                         class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                 </div>
-                <div class="mb-3">
+                <div class="mb-4">
                     <p class="text-xs text-gray-600 mb-2">Rolünüzü seçin:</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <button type="button" onclick="selectJobType('Öğrenci')" id="studentBtn" 
                             class="job-btn py-3 px-2 text-xs rounded border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer font-medium bg-white text-center focus:outline-none focus:ring-2 focus:ring-blue-400">
                             <div class="text-lg mb-1">🎓</div>
@@ -128,7 +144,7 @@
                     </div>
                 </div>
                 <div id="selectedJobDisplay" class="text-center text-sm text-gray-600 mb-3 min-h-[20px]"></div>
-                <div class="grid grid-cols-2 gap-2 mb-4">
+                <div class="grid grid-cols-2 gap-3 mb-6">
                     <input type="text" id="firstName" placeholder="Adınız" 
                         class="border-2 border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                     <input type="text" id="lastName" placeholder="Soyadınız" 
@@ -300,16 +316,28 @@
         </div>
     </div>
 
-    <!-- AI Interpretation Modal -->
-    <div id="aiInterpretationModal" class="modal">
-      <div class="modal-content max-w-7xl bg-white shadow-2xl" style="margin: 2% auto; padding: 40px; border-radius: 20px; max-height: 90vh; overflow-y: auto; width: 95vw;">
-        <div class="modal-header flex justify-between items-center mb-6 border-b pb-4">
-          <h2 class="text-2xl font-bold text-gray-800">🤖 AI Yorum & Analiz</h2>
-          <span class="close cursor-pointer text-4xl text-gray-500 hover:text-gray-700" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
+
+        <!-- AI Interpretation Modal -->
+        <div id="aiInterpretationModal" class="modal">
+            <div class="modal-content max-w-7xl bg-white shadow-2xl" style="margin: 2% auto; padding: 40px; border-radius: 20px; max-height: 90vh; overflow-y: auto; width: 95vw;">
+                <div class="modal-header flex justify-between items-center mb-6 border-b pb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">🤖 AI Yorum & Analiz</h2>
+                    <span class="close cursor-pointer text-4xl text-gray-500 hover:text-gray-700" onclick="document.getElementById('aiInterpretationModal').classList.remove('show')">&times;</span>
+                </div>
+                <div id="aiInterpretationContent" class="text-lg text-gray-800 leading-8 whitespace-pre-line"></div>
+            </div>
         </div>
-        <div id="aiInterpretationContent" class="text-lg text-gray-800 leading-8 whitespace-pre-line"></div>
-      </div>
-    </div>
+
+        <!-- Category Detail Modal (İşletme.html'den kopyalandı) -->
+        <div id="categoryDetailModal" class="modal">
+            <div class="modal-content max-w-4xl bg-white shadow-2xl" style="margin: 5% auto; padding: 30px; border-radius: 20px; max-height: 80vh; overflow-y: auto; width: 90vw;">
+                <div class="modal-header flex justify-between items-center mb-6 border-b pb-4">
+                    <h2 class="text-2xl font-bold text-gray-800" id="categoryDetailTitle">📋 Kategori Detayları</h2>
+                    <span class="close cursor-pointer text-3xl text-gray-500 hover:text-gray-700" onclick="document.getElementById('categoryDetailModal').classList.remove('show')">&times;</span>
+                </div>
+                <div id="categoryDetailContent"></div>
+            </div>
+        </div>
 
     <!-- Yönetici Portalı -->
     <div id="adminModule" class="max-w-4xl mx-auto p-4 hidden">
@@ -356,6 +384,8 @@
                     <h3 class="text-xl font-semibold mb-6">Okul/Kurum Listesi ve Yönetimi</h3>
                     <div class="mb-4 flex flex-col sm:flex-row gap-2 items-center">
                         <input id="companySearchInput" type="text" placeholder="🔍 Kurum adı ile ara..." class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" oninput="filterCompanyList()">
+                        <button onclick="showNewCompanyModal()" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm flex items-center gap-1"><span>🆕</span>Yeni Kurum</button>
+                        <button onclick="showRegisteredCompanyModal()" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm flex items-center gap-1"><span>📋</span>Kayıtlı Kurum</button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto">
@@ -385,7 +415,129 @@
         </div>
     </div>
 
+    <!-- Yeni Kurum Modalı -->
+    <div id="newCompanyModal" class="modal">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4">🆕 Yeni Kurum Kaydı</h3>
+            <div class="mb-3">
+                <input id="newCompanyName" type="text" placeholder="Kurum adı (Okul, Üniversite vb.)" class="w-full border rounded px-3 py-2 mb-2">
+            </div>
+            <button onclick="addNewCompany()" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition mb-2">Kaydı Oluştur</button>
+            <button onclick="closeNewCompanyModal()" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition">Vazgeç</button>
+        </div>
+    </div>
+
+    <!-- Kayıtlı Kurum Modalı -->
+    <div id="registeredCompanyModal" class="modal">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-semibold mb-4">📋 Kayıtlı Kurum Seçimi</h3>
+            <div class="mb-3">
+                <select id="registeredCompanySelect" class="w-full border rounded px-3 py-2 mb-2">
+                    <option value="">Kurum seçiniz...</option>
+                </select>
+            </div>
+            <button onclick="loginRegisteredCompany()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition mb-2">Seç</button>
+            <button onclick="closeRegisteredCompanyModal()" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition">Vazgeç</button>
+        </div>
+    </div>
+
     <script>
+// Giriş ekranında şirket tipi seçimi ve dropdown kontrolü
+document.addEventListener('DOMContentLoaded', function() {
+    const newRadio = document.getElementById('newCompanyRadio');
+    const existRadio = document.getElementById('existingCompanyRadio');
+    const manualInput = document.getElementById('manualCompanyInput');
+    const dropdownDiv = document.getElementById('existingCompanySelect');
+    const dropdown = document.getElementById('companyDropdown');
+
+    function toggleCompanyInputType() {
+        if (newRadio.checked) {
+            manualInput.classList.remove('hidden');
+            dropdownDiv.classList.add('hidden');
+            document.getElementById('companyName').value = '';
+        } else {
+            manualInput.classList.add('hidden');
+            dropdownDiv.classList.remove('hidden');
+            // Kurumları yükle
+            loadExistingCompanies();
+        }
+    }
+    newRadio.addEventListener('change', toggleCompanyInputType);
+    existRadio.addEventListener('change', toggleCompanyInputType);
+    // İlk yüklemede doğru alanı göster
+    toggleCompanyInputType();
+});
+
+// Kayıtlı kurumları dropdown'a yükle
+async function loadExistingCompanies() {
+    if (!systemData.surveyData) systemData.surveyData = await loadFromFirebase();
+    const dropdown = document.getElementById('companyDropdown');
+    dropdown.innerHTML = '<option value="">Kurum seçiniz...</option>';
+    const companies = systemData.surveyData.companies || {};
+    Object.values(companies).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = c.name;
+        dropdown.appendChild(opt);
+    });
+}
+// Yeni Kurum Modalı Aç/Kapat
+function showNewCompanyModal() {
+    document.getElementById('newCompanyModal').classList.add('show');
+}
+function closeNewCompanyModal() {
+    document.getElementById('newCompanyModal').classList.remove('show');
+}
+// Kayıtlı Kurum Modalı Aç/Kapat
+async function showRegisteredCompanyModal() {
+    // Kurum listesini doldur
+    if (!systemData.surveyData) systemData.surveyData = await loadFromFirebase();
+    const select = document.getElementById('registeredCompanySelect');
+    select.innerHTML = '<option value="">Kurum seçiniz...</option>';
+    const companies = systemData.surveyData.companies || {};
+    Object.values(companies).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+    });
+    document.getElementById('registeredCompanyModal').classList.add('show');
+}
+function closeRegisteredCompanyModal() {
+    document.getElementById('registeredCompanyModal').classList.remove('show');
+}
+
+// Yeni Kurum Ekleme Fonksiyonu
+async function addNewCompany() {
+    const name = document.getElementById('companyName').value.trim();
+    if (!name) {
+        showModal('Hata', 'Kurum adı giriniz.');
+        return;
+    }
+    if (!systemData.surveyData) systemData.surveyData = await loadFromFirebase();
+    if (!systemData.surveyData.companies) systemData.surveyData.companies = {};
+    // Aynı isimde kurum var mı?
+    const exists = Object.values(systemData.surveyData.companies).some(c => c.name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+        showModal('Hata', 'Bu isimde bir kurum zaten kayıtlı.');
+        return;
+    }
+    // Şifre otomatik oluşturulsun
+    const password = generateCompanyPassword ? generateCompanyPassword() : Math.random().toString(36).slice(-8);
+    const key = 'company_' + Date.now();
+    systemData.surveyData.companies[key] = { name, password, status: 'Aktif' };
+    await saveToFirebase();
+    closeNewCompanyModal();
+    showModal('Başarılı', 'Kurum kaydı başarıyla oluşturuldu.');
+    loadCompanyList();
+}
+
+// Kayıtlı Kurum ile Giriş Fonksiyonu
+async function loginRegisteredCompany() {
+    // Bu fonksiyon artık kullanılmıyor, modal kaldırıldı
+    // Seçim doğrudan giriş ekranında yapılıyor
+    return;
+}
 // Firebase config ve Google Sign-In logic (hastane.html ile aynı)
 const firebaseConfig = {
     apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
@@ -420,6 +572,45 @@ document.addEventListener('DOMContentLoaded', function() {
                         userInfoDiv.classList.remove('hidden');
                         document.getElementById('firstName').readOnly = false;
                         document.getElementById('lastName').readOnly = false;
+
+                        // --- İlk giriş kontrolü (işletme.html mantığıyla) ---
+                        // systemData.surveyData.responses içinde bu email ile kayıt var mı?
+                        (async function() {
+                            try {
+                                if (!systemData.surveyData) {
+                                    systemData.surveyData = await loadFromFirebase();
+                                }
+                                const allResponses = Object.values(systemData.surveyData.responses || {});
+                                const userEmail = user.email;
+                                const hasEntry = allResponses.some(r => r.email === userEmail);
+                                if (!hasEntry) {
+                                    showModal('👋 Hoş Geldiniz!', `
+                                        <div class=\"text-lg mb-4\">Sisteme ilk kez giriş yaptınız. Lütfen aşağıdan seçim yapınız:</div>
+                                        <div class=\"flex flex-col gap-3\">
+                                            <button id=\"firstEntryBtn\" class=\"w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition\">İlk Kez Giriş Yapıyorum</button>
+                                            <button id=\"registeredUserBtn\" class=\"w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition\">Daha Önce Kayıt Oldum</button>
+                                        </div>
+                                    `);
+                                    setTimeout(() => {
+                                        const firstBtn = document.getElementById('firstEntryBtn');
+                                        const regBtn = document.getElementById('registeredUserBtn');
+                                        if (firstBtn) firstBtn.onclick = function() {
+                                            closeModal();
+                                            showModal('Bilgi', '<div class=\"text-base\">Lütfen bilgilerinizi eksiksiz doldurup anketi tamamlayınız.</div>');
+                                        };
+                                        if (regBtn) regBtn.onclick = function() {
+                                            closeModal();
+                                            showModal('Bilgi', '<div class=\"text-base\">Kayıtlı kullanıcı olarak devam ediyorsunuz.</div>');
+                                        };
+                                    }, 300);
+                                } else {
+                                    showModal('👋 Tekrar Hoş Geldiniz!', `<div class=\"text-lg\">Kayıtlı kullanıcı olarak giriş yaptınız.</div>`);
+                                }
+                            } catch (e) {
+                                console.warn('İlk giriş kontrolü sırasında hata:', e);
+                            }
+                        })();
+                        // --- /ilk giriş kontrolü ---
                     }
                 })
                 .catch((error) => {
@@ -1489,12 +1680,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     detayTablo += `</tr>`;
 // Kategori detay modalı fonksiyonu
 function showCategoryDetailModal(grup, categoryName) {
+    // DEBUG: Fonksiyon tetiklendi mi?
+    console.log('[DETAY MODAL] showCategoryDetailModal çağrıldı:', { grup, categoryName });
+
     // Soruları ve yanıt dağılımını bul
     const groupQuestions = questions[grup];
     const categories = categoryDefinitions[grup];
-    if (!groupQuestions || !categories) return;
+    if (!groupQuestions || !categories) {
+        console.warn('[DETAY MODAL] Grup veya kategori bulunamadı:', { grup, categoryName });
+        return;
+    }
     const catIndex = categories.indexOf(categoryName);
-    if (catIndex === -1) return;
+    if (catIndex === -1) {
+        console.warn('[DETAY MODAL] Kategori index bulunamadı:', { grup, categoryName });
+        return;
+    }
     const start = catIndex * 5;
     const end = start + 5;
     const catQuestions = groupQuestions.slice(start, end);
@@ -1516,10 +1716,13 @@ function showCategoryDetailModal(grup, categoryName) {
             });
             answerStats.push(counts);
         }
+        console.log('[DETAY MODAL] Cevap istatistikleri:', answerStats);
+    } else {
+        console.warn('[DETAY MODAL] systemData.surveyData.responses yok veya boş');
     }
 
     // Modal içeriği hazırla
-    let html = `<div class="mb-4"><b>${grup} - ${categoryName}</b></div>`;
+    let html = `<div class=\"mb-4\"><b>${grup} - ${categoryName}</b></div>`;
     html += '<table class="w-full text-sm mb-4 border"><thead><tr><th class="border px-2 py-1">Soru</th>';
     for (let i = 1; i <= 5; i++) html += `<th class="border px-2 py-1">${i}</th>`;
     html += '</tr></thead><tbody>';
@@ -1536,8 +1739,19 @@ function showCategoryDetailModal(grup, categoryName) {
     });
     html += '</tbody></table>';
     html += '<div class="text-xs text-gray-500">Her sütun, ilgili soruya verilen 1-5 arası puanların kaç kez seçildiğini gösterir.</div>';
-    showModal('Kategori Detayı', html);
+
+    // Modal başlık ve içeriklerini doldur
+    document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} Detayları`;
+    document.getElementById('categoryDetailContent').innerHTML = html;
+    document.getElementById('categoryDetailModal').classList.add('show');
+    // DEBUG: Modal açıldı mı?
+    setTimeout(() => {
+        const modal = document.getElementById('categoryDetailModal');
+        console.log('[DETAY MODAL] Modal show class:', modal.classList.contains('show'));
+    }, 100);
 }
+// Fonksiyonu global scope'a ekle
+window.showCategoryDetailModal = showCategoryDetailModal;
                 });
             });
             detayTablo += `</tbody></table></div>`;
