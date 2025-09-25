@@ -1337,43 +1337,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const memnuniyetLabels = ['5 - Çok Memnunum', '4 - Memnunum', '3 - Kararsızım', '2 - Memnun Değilim', '1 - Hiç Memnun Değilim'];
             const memnuniyetMap = {5:0, 4:1, 3:2, 2:3, 1:4};
             
-            // Kategori tanımları (10'lu yeni yapı)
+            // Kategori tanımları
             const categoryDefinitions = {
                 'Öğrenci': [
-                    'Ders İçeriği ve Öğrenme Ortamı',
-                    'Okul İklimi ve Güvenlik',
-                    'Öğretmen Etkileşimi ve Destek',
-                    'Sosyal ve Kültürel Aktiviteler',
-                    'Fiziksel Olanaklar',
-                    'Karar Alma Süreçleri ve Katılım',
-                    'Bilişim ve Dijitalleşme',
-                    'Okul Dışı Hazırlık ve Ödevler',
-                    'Çeşitlilik ve Kapsayıcılık',
-                    'Genel Memnuniyet ve Tavsiye'
+                    'Eğitim Ortamı ve Olanaklar',
+                    'Yönetim ve İletişim', 
+                    'Mesleki Gelişim ve Destek',
+                    'Değerlendirme ve Geri Bildirim',
+                    'Teknoloji ve Geleceğe Hazırlık'
                 ],
                 'Öğretmen': [
-                    'Ders İçeriği ve Öğrenme Ortamı',
-                    'Okul İklimi ve Güvenlik',
-                    'Öğretmen Etkileşimi ve Destek',
-                    'Sosyal ve Kültürel Aktiviteler',
-                    'Fiziksel Olanaklar',
-                    'Karar Alma Süreçleri ve Katılım',
-                    'Bilişim ve Dijitalleşme',
-                    'Okul Dışı Hazırlık ve Ödevler',
-                    'Çeşitlilik ve Kapsayıcılık',
-                    'Genel Memnuniyet ve Motivasyon'
+                    'Okul Yönetimi ve Liderlik',
+                    'Öğretim Ortamı ve Kaynaklar',
+                    'Mesleki Gelişim ve Destekler',
+                    'Veli İlişkileri ve Geri Bildirim',
+                    'Eğitimde Teknoloji ve Yenilenme'
                 ],
                 'Veli/Ebeveyn': [
-                    'Ders İçeriği ve Öğrenme Ortamı',
-                    'Okul İklimi ve Güvenlik',
-                    'Öğretmen Etkileşimi ve Destek',
-                    'Sosyal ve Kültürel Aktiviteler',
-                    'Fiziksel Olanaklar',
-                    'Karar Alma Süreçleri ve Katılım',
-                    'Bilişim ve Dijitalleşme',
-                    'Okul Dışı Hazırlık ve Ödevler',
-                    'Çeşitlilik ve Kapsayıcılık',
-                    'Genel Memnuniyet ve Tavsiye'
+                    'Eğitim Kalitesi ve Akademik Gelişim',
+                    'Okul Yönetimi ve İletişim',
+                    'Öğretmenler ve Rehberlik Hizmetleri', 
+                    'Okul Ortamı ve Olanaklar',
+                    'Eğitimde Teknoloji ve Gelecek'
                 ]
             };
             
@@ -1475,10 +1460,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                     
                     detayTablo += `<tr>
-                        <td class="sub-category flex items-center justify-between">
-                            <span>${categoryName}</span>
-                            <button class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs border border-blue-200 hover:bg-blue-200 transition" onclick="showCategoryDetailModal('${grup.replace(/'/g, '')}','${categoryName.replace(/'/g, '')}')">Detay Göster</button>
-                        </td>`;
+                        <td class="sub-category">${categoryName}</td>`;
+                    
                     if (toplamKategoriCevap > 0) {
                         kategoriCounts.forEach(count => {
                             detayTablo += `<td style="text-align: center;">${count}</td>`;
@@ -1487,57 +1470,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         kategoriCounts.forEach(_ => detayTablo += `<td style="text-align: center;">0</td>`);
                     }
                     detayTablo += `</tr>`;
-// Kategori detay modalı fonksiyonu
-function showCategoryDetailModal(grup, categoryName) {
-    // Soruları ve yanıt dağılımını bul
-    const groupQuestions = questions[grup];
-    const categories = categoryDefinitions[grup];
-    if (!groupQuestions || !categories) return;
-    const catIndex = categories.indexOf(categoryName);
-    if (catIndex === -1) return;
-    const start = catIndex * 5;
-    const end = start + 5;
-    const catQuestions = groupQuestions.slice(start, end);
-
-    // Yanıt dağılımı için mevcut survey verilerini bul
-    let answerStats = [];
-    if (typeof systemData !== 'undefined' && systemData.surveyData && systemData.surveyData.responses) {
-        // Sadece ilgili grup için anketleri al
-        const allResponses = Object.values(systemData.surveyData.responses || {});
-        const groupSurveys = allResponses.filter(s => s.jobType === grup);
-        for (let i = 0; i < 5; i++) {
-            // Her soru için 1-5 arası dağılım
-            const counts = [0, 0, 0, 0, 0];
-            groupSurveys.forEach(s => {
-                const answer = s.answers[start + i];
-                if (answer && answer.score >= 1 && answer.score <= 5) {
-                    counts[answer.score - 1]++;
-                }
-            });
-            answerStats.push(counts);
-        }
-    }
-
-    // Modal içeriği hazırla
-    let html = `<div class="mb-4"><b>${grup} - ${categoryName}</b></div>`;
-    html += '<table class="w-full text-sm mb-4 border"><thead><tr><th class="border px-2 py-1">Soru</th>';
-    for (let i = 1; i <= 5; i++) html += `<th class="border px-2 py-1">${i}</th>`;
-    html += '</tr></thead><tbody>';
-    catQuestions.forEach((q, i) => {
-        html += `<tr><td class="border px-2 py-1">${q}</td>`;
-        if (answerStats.length === 5) {
-            answerStats[i].forEach(count => {
-                html += `<td class="border px-2 py-1 text-center">${count}</td>`;
-            });
-        } else {
-            for (let j = 0; j < 5; j++) html += `<td class="border px-2 py-1 text-center">-</td>`;
-        }
-        html += '</tr>';
-    });
-    html += '</tbody></table>';
-    html += '<div class="text-xs text-gray-500">Her sütun, ilgili soruya verilen 1-5 arası puanların kaç kez seçildiğini gösterir.</div>';
-    showModal('Kategori Detayı', html);
-}
                 });
             });
             detayTablo += `</tbody></table></div>`;
