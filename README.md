@@ -458,192 +458,189 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Soru setleri
         const questions = {
-                "Öğrenci": [
-                    // 1. Ders İçeriği ve Öğrenme Ortamı
-                    "Derslerde işlenen konular ilgi çekici ve hayatla bağlantılıdır.",
-                    "Öğretmenlerimin kullandığı öğretim yöntemleri (tartışma, proje vb.) öğrenmemi kolaylaştırıyor.",
-                    "Okuldaki teknolojik araçlar (akıllı tahta, bilgisayar laboratuvarı) derslere katkı sağlıyor.",
-                    "Ders sırasında soru sormaktan veya fikrimi belirtmekten çekinmiyorum.",
-                    "Sınavlar ve değerlendirmeler, öğrendiklerimi doğru bir şekilde ölçmektedir.",
-                    // 2. Okul İklimi ve Güvenlik
-                    "Okulumda kendimi fiziksel ve duygusal olarak güvende hissediyorum.",
-                    "Okulda akran zorbalığı (bullying) ve taciz olayları nadiren yaşanmaktadır.",
-                    "Okul yönetiminin kural ve disiplin uygulamaları adil ve tutarlıdır.",
-                    "Okul binası ve çevresi temiz ve bakımlıdır.",
-                    "Okulun acil durum ve güvenlik tatbikatları konusunda bilgi sahibiyim.",
-                    // 3. Öğretmen Etkileşimi ve Destek
-                    "Öğretmenlerim bana saygılı davranır ve bana değer verdiğini hissettirir.",
-                    "Bir konuda yardıma ihtiyacım olduğunda, öğretmenime kolayca ulaşabilirim.",
-                    "Öğretmenlerim, hatalarımdan ders çıkarmam için beni cesaretlendirir.",
-                    "Öğretmenlerim, bireysel öğrenme farklılıklarımı dikkate alarak yardımcı olur.",
-                    "Okul rehberlik servisi, eğitim ve kariyer hedeflerimde bana yol göstermektedir.",
-                    // 4. Sosyal ve Kültürel Aktiviteler
-                    "Okulda katılabileceğim kulüpler, spor takımları ve sanatsal etkinlikler yeterince çeşitlidir.",
-                    "Okul gezileri ve saha çalışmaları dersleri daha anlamlı hale getirmektedir.",
-                    "Okul, benim liderlik becerilerimi geliştirecek fırsatlar sunmaktadır.",
-                    "Okul etkinlikleri, farklı öğrencilerle tanışmamı ve kaynaşmamı sağlamaktadır.",
-                    "Okuldaki sosyal etkinlikler için ayrılan mekanlar ve materyaller yeterlidir.",
-                    // 5. Fiziksel Olanaklar
-                    "Okuldaki kütüphane ve okuma alanları ders çalışmak için uygun bir ortam sunmaktadır.",
-                    "Okulun spor salonu/alanları yeterli donanıma ve bakıma sahiptir.",
-                    "Okulun yemekhanesi/kantini hijyenik ve sunduğu seçenekler sağlıklıdır.",
-                    "Tuvalet ve lavaboların temizlik ve hijyeni yeterli düzeydedir.",
-                    "Okulun ısıtma ve havalandırma sistemleri, ders sırasında rahat hissetmemi sağlamaktadır.",
-                    // 6. Karar Alma Süreçleri ve Katılım
-                    "Okul yönetiminin bizimle ilgili aldığı kararlar hakkında fikrimiz sorulmaktadır.",
-                    "Öğrenci konseyi/temsilciliği, öğrencilerin sesi olma görevini etkili bir şekilde yerine getirmektedir.",
-                    "Okul kurallarının belirlenme sürecinde, öğrencilerin görüşleri önemsenmektedir.",
-                    "Okulda kendimi önemli ve değerli bir parça olarak görüyorum.",
-                    "Okulda eleştirel düşünceyi ve tartışmayı teşvik eden bir ortam vardır.",
-                    // 7. Bilişim ve Dijitalleşme
-                    "Okulun interneti (wi-fi) hızlı ve güvenli bir şekilde çalışmaktadır.",
-                    "Okulun kullandığı dijital öğrenme platformları (LMS vb.) kolay kullanımlıdır.",
-                    "Öğretmenlerimin teknolojiyi kullanma becerileri dersleri daha iyi hale getiriyor.",
-                    "Okul, dijital vatandaşlık ve internet güvenliği konularında beni bilinçlendirmektedir.",
-                    "E-posta, not sistemi gibi dijital iletişim araçları üzerinden bilgiye kolayca ulaşabilirim.",
-                    // 8. Okul Dışı Hazırlık ve Ödevler
-                    "Bana verilen ödevler, öğrenmemi destekleyecek şekilde anlamlı ve faydalıdır.",
-                    "Ödevlerin zorluk seviyesi ve süresi, diğer derslerimle dengeyi korumaktadır.",
-                    "Öğretmenlerim, ödevlerimi düzenli kontrol eder ve yapıcı geri bildirim verir.",
-                    "Okul, üniversite/gelecek kariyerim için gereken becerileri kazanmama yardımcı olmaktadır.",
-                    "Okul dışındaki özel derslere veya ek kurslara ihtiyaç duymuyorum.",
-                    // 9. Çeşitlilik ve Kapsayıcılık
-                    "Okulumuz farklı kültür, inanç ve geçmişten gelen öğrencileri kucaklamaktadır.",
-                    "Okulda dezavantajlı öğrenciler için özel olarak tasarlanmış destek programları mevcuttur.",
-                    "Öğretmenlerim, cinsiyet, ırk veya engel ayrımı yapmaksızın tüm öğrencilere eşit davranır.",
-                    "Okul, farklı fikirlere ve bakış açılarına saygı duyulmasını teşvik etmektedir.",
-                    "Okulda kendimi olduğum gibi kabul edilmiş hissediyorum.",
-                    // 10. Genel Memnuniyet ve Tavsiye
-                    "Okula gitmekten genellikle mutluyum ve isteyerek geliyorum.",
-                    "Bu okulu arkadaşlarıma ve aileme tavsiye ederim.",
-                    "Okulun genel atmosferi ve pozitif enerjisi yüksektir.",
-                    "Okuldaki başarım ve kişisel gelişimim arasında pozitif bir ilişki görüyorum.",
-                    "Genel olarak, bu okuldaki eğitim kalitesinden ve deneyiminden memnunum."
-                ],
-                "Öğretmen": [
-                    // 1. Ders İçeriği ve Öğrenme Ortamı
-                    "Müfredat içeriği, öğrencilerin yaş ve gelişim seviyelerine uygun ve günceldir.",
-                    "Öğretmenler odası ve ortak çalışma alanları, verimli çalışmam için yeterli ve konforludur.",
-                    "Derste kullanmamız gereken teknolojik donanımlar (akıllı tahta, projeksiyon) sorunsuz çalışmaktadır.",
-                    "Sınıf mevcudu, etkili ve birebir öğrenmeyi destekleyecek ideal seviyededir.",
-                    "Okulun laboratuvar, atölye ve sanatsal materyal bütçesi derslerimi zenginleştirmeye yeterlidir.",
-                    // 2. Okul İklimi ve Güvenlik
-                    "Okuldaki iş yükü, stres yönetimi konusunda idareden destek alıyorum.",
-                    "Okul yönetiminin disiplin kurallarını uygulama konusunda tutarlı ve adildir.",
-                    "Velilerle olan iletişimim, öğrenci başarısını destekleyici ve saygılı bir zeminde ilerlemektedir.",
-                    "Okul, öğretmenler arasında mesleki işbirliği ve saygılı bir iletişim kültürünü teşvik etmektedir.",
-                    "Okuldaki güvenlik prosedürleri, hem öğrenciler hem de personel için yeterlidir.",
-                    // 3. Öğretmen Etkileşimi ve Destek
-                    "Okul yönetimi, öğretmenler arası fikir alışverişini ve ortak proje geliştirmeyi desteklemektedir.",
-                    "Performans değerlendirme ve geri bildirimler, adil ve gelişim odaklıdır.",
-                    "Rehberlik servisi ile öğrenci sorunları ve özel ihtiyaçları konusunda etkili işbirliği yapıyorum.",
-                    "İdareden aldığım idari ve lojistik destek (evrak, fotokopi vb.) yeterlidir.",
-                    "Okul, benim mesleki özerkliğime ve karar verme yetkime saygı duymaktadır.",
-                    // 4. Sosyal ve Kültürel Aktiviteler
-                    "Öğrencilerin kulüp ve aktivite seçimlerine rehberlik etme konusunda yeterli zamanım var.",
-                    "Okulun sosyal ve kültürel etkinlikleri, öğrencilerin kişisel gelişimine somut katkı sağlamaktadır.",
-                    "Aktiviteler için ayrılan bütçe ve kaynaklar, etkinlik kalitesini korumaktadır.",
-                    "Okul dışı gezilerin organizasyonu, öğretmenler için gereksiz iş yükü yaratmamaktadır.",
-                    "Okul, öğrencilerin ilgi alanlarına yönelik yenilikçi aktivite fikirlerimi desteklemektedir.",
-                    // 5. Fiziksel Olanaklar
-                    "Sınıfların fiziksel düzeni (ışık, masa, sandalye) farklı öğretim yöntemlerine uygundur.",
-                    "Okulun kütüphane ve kaynak materyal stoğu derslerimi destekleyecek kadar geniştir.",
-                    "Okul, öğretmenlerin dinlenmesi ve hazırlanması için yeterli ve kaliteli özel alanlar sunmaktadır.",
-                    "Okul binasının genel temizliği ve bakımı, çalışma motivasyonumu artırmaktadır.",
-                    "Okul yönetimi, fiziksel iyileştirmeler konusunda öğretmenlerin önerilerini dikkate alır.",
-                    // 6. Karar Alma Süreçleri ve Katılım
-                    "Okulun eğitim politikalarının ve hedeflerinin belirlenme sürecine aktif olarak katılırım.",
-                    "Bölüm toplantıları, okulun stratejik yönü hakkında fikir beyan etmem için etkili bir platformdur.",
-                    "Öğretmenler olarak, müfredat ve ders materyalleri seçimi konusunda yeterli yetkiye sahibiz.",
-                    "Okulda yönetimsel kararların gerekçeleri bize açık ve şeffaf bir şekilde açıklanır.",
-                    "Okulun kaynak tahsisi (personel, bütçe) kararlarında adil davranıldığına inanıyorum.",
-                    // 7. Bilişim ve Dijitalleşme
-                    "Okulun kullandığı öğrenci yönetim sistemleri (OBS, LMS) kullanıcı dostu ve işimi kolaylaştırmaktadır.",
-                    "BT (Bilgi Teknolojileri) desteği, teknik sorunlarımı hızlı ve etkili bir şekilde çözmektedir.",
-                    "Dijital platformlar üzerinden velilere not ve geri bildirim gönderme sürecim sorunsuz ilerlemektedir.",
-                    "Okul, derslerimde dijital teknolojileri daha etkili kullanmam için sürekli eğitimler sağlamaktadır.",
-                    "Okulda öğrenci verilerinin gizliliği ve güvenliği konusunda sıkı protokoller uygulanmaktadır.",
-                    // 8. Okul Dışı Hazırlık ve Ödevler
-                    "Okul yönetimi, öğretmenler arası ödev yükünü dengelemeye dikkat etmektedir.",
-                    "Ödev kontrolü ve geri bildirim için haftalık ders saatleri dışında yeterli zamanım kalmaktadır.",
-                    "Velilerin ödevlere gereğinden fazla müdahalesi konusunda okul net bir duruş sergilemektedir.",
-                    "Öğrencileri üniversite giriş sınavlarına hazırlama konusunda yeterli kaynak ve desteğe sahibiz.",
-                    "Öğretmenlerin özel ders verme kuralları şeffaf ve okul politikalarıyla uyumludur.",
-                    // 9. Çeşitlilik ve Kapsayıcılık
-                    "Özel gereksinimli öğrenciler için okulda yeterli destek personeli (özel eğitim uzmanı) mevcuttur.",
-                    "Okul, farklı kültür ve geçmişten gelen öğrencilerin uyumunu sağlamak için aktif programlar yürütmektedir.",
-                    "Kapsayıcı eğitim yöntemleri konusunda düzenli olarak hizmet içi eğitim alıyorum.",
-                    "Okuldaki ırk, cinsiyet veya dini ayrımcılık olaylarına karşı yönetim net ve hızlı tepki vermektedir.",
-                    "Sınıf içinde sosyo-ekonomik farklılıkların yarattığı öğrenme engellerini aşmak için destekleniyorum.",
-                    // 10. Genel Memnuniyet ve Motivasyon
-                    "Aldığım ücret ve yan haklar, yaptığım işin sorumluluğu ve piyasa koşulları ile orantılıdır.",
-                    "Okulda uzun vadeli kariyer planımı gerçekleştirebileceğime inanıyorum.",
-                    "Okulun eğitim felsefesi ve değerleri, kişisel değerlerimle örtüşmektedir.",
-                    "Yaptığım işin öğrenci gelişimine etkisini görmek beni motive etmektedir.",
-                    "Genel olarak, bu kurumda çalışmaktan memnunum ve kurumuma bağlıyım."
-                ],
-                "Veli/Ebeveyn": [
-                    // 1. Ders İçeriği ve Öğrenme Ortamı
-                    "Okulun uyguladığı müfredat (ders içerikleri), çocuğumun gelecekteki başarısı için yeterlidir.",
-                    "Okul, yabancı dil eğitimi konusunda etkili ve kalıcı bir öğrenme sağlamaktadır.",
-                    "Çocuğumun okulda öğrendiği bilgileri günlük hayatta kullanabildiğini görüyorum.",
-                    "Okul, eleştirel düşünme ve problem çözme gibi 21. yüzyıl becerilerini geliştirmeye odaklanmıştır.",
-                    "Çocuğumun derslerdeki başarısı ve gelişim hızı konusunda düzenli bilgilendiriliyorum.",
-                    // 2. Okul İklimi ve Güvenlik
-                    "Çocuğumun okulda güvende olduğundan eminim.",
-                    "Okul yönetimi, disiplin ve okul kuralları konusunda velilerle açık iletişim kurmaktadır.",
-                    "Okulun fiziksel güvenliği (giriş/çıkış kontrolü, kamera sistemleri) yeterli seviyededir.",
-                    "Okul, zorbalık ve olumsuz davranışlar karşısında hızlı ve kararlı bir tutum sergilemektedir.",
-                    "Okulun sağlık hizmetleri (revir, ilk yardım) konusunda yeterli donanıma sahip olduğuna inanıyorum.",
-                    // 3. Öğretmen Etkileşimi ve Destek
-                    "Çocuğumun öğretmenleriyle düzenli ve yapıcı iletişim kurabiliyorum.",
-                    "Çocuğumun öğretmenleri, onun bireysel ihtiyaçlarına ve öğrenme tarzına dikkat etmektedir.",
-                    "Okul rehberlik servisi, eğitsel ve davranışsal konularda bize somut destek sağlamaktadır.",
-                    "Öğretmenler, çocuğumun sorunlarını ve endişelerini ciddiye almaktadır.",
-                    "Okul yönetimi, öğretmen ve veli arasındaki işbirliğini teşvik etmektedir.",
-                    // 4. Sosyal ve Kültürel Aktiviteler
-                    "Okulun sunduğu kulüp ve aktivite seçenekleri çocuğumun ilgi alanlarını desteklemektedir.",
-                    "Okulun düzenlediği kültürel etkinlikler ve geziler, çocuğumun sosyal gelişimine katkı sağlamaktadır.",
-                    "Okul, velilerin sosyal etkinliklere katılımını ve gönüllülüğünü teşvik etmektedir.",
-                    "Okul, öğrenciler arasında takım çalışması ve liderlik becerilerini güçlendirmektedir.",
-                    "Çocuğum, okul etkinliklerinde kendine güvenini artıracak fırsatlar bulmaktadır.",
-                    // 5. Fiziksel Olanaklar
-                    "Okul binası ve sınıflar temiz, modern ve öğrencilerin öğrenme ortamına uygundur.",
-                    "Okulun kütüphanesi, çocuğumun araştırma yapması ve okuma alışkanlığı kazanması için yeterlidir.",
-                    "Okulun yemek hizmetleri (sağlık, çeşitlilik ve hijyen) beklentilerimi karşılamaktadır.",
-                    "Okul bahçesi ve spor alanları, çocuğumun fiziksel aktivite yapması için güvenli ve yeterlidir.",
-                    "Okulun genel atmosferi, çocuğumun okula mutlu gitmesini sağlamaktadır.",
-                    // 6. Karar Alma Süreçleri ve Katılım
-                    "Okulun eğitim politikaları ve hedefleri konusunda veliler olarak yeterince bilgilendiriliyoruz.",
-                    "Okulda, velilerin fikirlerini iletebileceği ve yönetimle doğrudan konuşabileceği düzenli platformlar mevcuttur.",
-                    "Okulun Veli-Okul Aile Birliği, okulun gelişimine somut katkılar sağlamaktadır.",
-                    "Okul yönetimi, önemli değişiklikler (mali, müfredat) hakkında bizi önceden bilgilendirmektedir.",
-                    "Çocuğumun okul içindeki durumuyla ilgili kararlara katılımım (özel eğitim, etkinlik vb.) sağlanmaktadır.",
-                    // 7. Bilişim ve Dijitalleşme
-                    "Okulun kullandığı dijital iletişim platformları, öğretmenlerle hızlı iletişim kurmamı sağlamaktadır.",
-                    "Çocuğumun notları ve devamsızlık bilgileri gibi verilere online olarak kolayca erişebiliyorum.",
-                    "Okulun dijital ortamları, çocuğumun güvenli bir şekilde öğrenmesini desteklemektedir.",
-                    "Okulun web sitesi/mobil uygulaması bilgilendirme ve duyurular için yeterli ve kullanışlıdır.",
-                    "Okulun teknolojiye yaptığı yatırımlar, eğitim kalitesini artırmaktadır.",
-                    // 8. Okul Dışı Hazırlık ve Ödevler
-                    "Çocuğuma verilen ödevlerin miktarı ve faydası dengelidir.",
-                    "Okul, çocuğumun ödev yapma sorumluluğunu kazanmasına yardımcı olmaktadır.",
-                    "Okul, ek akademik ihtiyaçlar (takviye ders, etüt) konusunda yeterli destek sunmaktadır.",
-                    "Okul yönetimi, veli-öğrenci-öğretmen arasındaki ödev dengesini gözetmektedir.",
-                    "Okulun sunduğu eğitim, çocuğumun mezun olduktan sonraki hayatına güçlü bir temel oluşturacaktır.",
-                    // 9. Çeşitlilik ve Kapsayıcılık
-                    "Okul, farklı öğrenme stillerine sahip çocuklara karşı esnek ve destekleyicidir.",
-                    "Okul, sosyal ve kültürel çeşitliliğin değerini vurgulayan bir ortam yaratmıştır.",
-                    "Okulun kapsayıcılık politikaları (özel gereksinimli öğrenci desteği) yeterli ve etkili uygulanmaktadır.",
-                    "Okul, tüm ailelerin kültürel ve dini farklılıklarına saygı göstermektedir.",
-                    "Okulda, dezavantajlı öğrenciler için maliyet dışı ek destek programları sunulmaktadır.",
-                    // 10. Genel Memnuniyet ve Tavsiye
-                    "Bu okulu başka velilere kesinlikle tavsiye ederim.",
-                    "Okulun ücret/eğitim kalitesi dengesi tatmin edicidir.",
-                    "Okulun mezuniyet sonrası başarıları (üniversite yerleştirme vb.) benim için önemlidir.",
-                    "Okul, çocuğumun hem akademik hem de karakter gelişimine katkı sağlamaktadır.",
-                    "Genel olarak, çocuğumun bu okulda eğitim almasından ve okulun yönetiminden memnunum."
-                ]
+            "Öğrenci": [
+                // Eğitim Ortamı ve Olanaklar (10 Soru)
+                "Okulun derslikleri ve ortak alanları (kantin, kütüphane) temiz ve düzenli 🏫",
+                "Okul binasındaki ısınma, havalandırma ve aydınlatma koşulları yeterli 🌡️",
+                "Okul kantinindeki yiyecek ve içeceklerin kalitesi ve çeşitliliği iyi 🍎",
+                "Okul bahçesi ve spor alanları aktiviteler için güvenli ve yeterli ⚽",
+                "Okul tuvaletlerinin hijyeni ve düzeninden memnunum 🚿",
+                "Sınıf ortamı, derslere odaklanmamı kolaylaştırıyor 📚",
+                "Okulun, öğrencilerin fiziksel ve psikolojik sağlığına önem verdiğini düşünüyorum 💚",
+                "Okulun güvenli bir yer olduğuna inanıyorum 🛡️",
+                "Okuldaki öğrenci dolapları ve eşya saklama alanları yeterli 🗄️",
+                "Okulun sağladığı sosyal olanaklar (etkinlikler, kulüpler) yeterli ve çeşitli 🎭",
+                
+                // Yönetim ve İletişim (10 Soru)
+                "Öğretmenlerim dersleri ilgi çekici ve anlaşılır bir şekilde anlatıyor 👨‍🏫",
+                "Öğretmenlerim, zorlandığım konularda bana yeterli desteği sağlıyor 🤝",
+                "Okulun müfredatı, gelecekteki akademik hedeflerime uygun 🎯",
+                "Sınavlar ve değerlendirmeler, öğrendiklerimi doğru bir şekilde ölçüyor 📝",
+                "Okulda yabancı dil öğrenme imkanları yeterli 🌍",
+                "Derslerde yaratıcılığımı ve eleştirel düşünme becerilerimi kullanabiliyorum 💡",
+                "Ödevler ve projeler, bilgilerimi pekiştirmeme yardımcı oluyor 📋",
+                "Öğretmenlerimin bana karşı tutum ve davranışları saygılı 🤗",
+                "Okulda öğrendiklerimin gerçek hayatta işime yarayacağına inanıyorum 🌟",
+                "Okulda aldığım eğitimin kalitesinden memnunum ⭐",
+                
+                // Mesleki Gelişim ve Destek (10 Soru)
+                "Okul yönetiminin, öğrencilerin fikirlerine değer verdiğini düşünüyorum 💭",
+                "Okul kuralları, adil ve tüm öğrenciler için eşit uygulanıyor ⚖️",
+                "Sorunlarım olduğunda, okul yönetimi veya rehberlik servisine rahatlıkla başvurabiliyorum 📞",
+                "Okul yönetiminin kararları açık ve anlaşılır 📢",
+                "Okulda zorbalık türlerine karşı etkili önlemler alınıyor 🛡️",
+                "Okulun, öğrenciler arasında saygı ve hoşgörüyü teşvik ettiğini düşünüyorum 🤝",
+                "Rehberlik servisinden aldığım destekten memnunum 👥",
+                "Okuldaki disiplin yönetimi, öğrencilerin gelişimini destekliyor 📈",
+                "Okul yönetimine güveniyorum ❤️",
+                "Okulun, öğrencilerin sosyal gelişimine katkı sağladığına inanıyorum 🌱",
+                
+                // Değerlendirme ve Geri Bildirim (10 Soru)
+                "Okul, lise veya üniversiteye hazırlanmam için gerekli desteği sağlıyor 🎓",
+                "Okuldaki kariyer rehberliği çalışmaları geleceğime yön vermeme yardımcı oluyor 🚀",
+                "Okulun mezunlarının başarılı olduğunu ve bana ilham verdiğini düşünüyorum ✨",
+                "Okulun, mesleki ilgi alanlarımı keşfetmem için fırsatlar sunduğuna inanıyorum 🔍",
+                "Okulun sunduğu eğitim, beni geleceğe hazırlıyor 📅",
+                "Okuldaki öğrenci projeleri, ekip çalışması ve liderlik becerilerimi geliştiriyor 👑",
+                "Okulun, bilimsel ve sanatsal yarışmalara katılmamızı desteklediğini düşünüyorum 🏆",
+                "Okulda aldığım eğitimle gurur duyuyorum 💪",
+                "Gelecekte bu okulun, başarılı bir mezunu olmak için doğru yerdeyim 🎯",
+                "Okulumun mezuniyetten sonra da bana destek olacağına inanıyorum 🤗",
+                
+                // Teknoloji ve Geleceğe Hazırlık (10 Soru)
+                "Okulumuz, teknolojiyi derslerimize etkili bir şekilde entegre ediyor 💻",
+                "Derslerde kullandığımız dijital araçlar (öğrenme platformları, uygulamalar vb.) kullanışlı 📱",
+                "Teknolojik yenilikleri öğrenmeye ve derslerimde kullanmaya istekliyim 🎓",
+                "Okul, dijital okuryazarlığımı geliştirmek için yeterli kaynak sağlıyor 📖",
+                "Okulun, yeni teknolojilere yatırım yaptığını düşünüyorum 💡",
+                "Okulun web sitesi ve mobil uygulaması, ders ve okul etkinlikleri hakkında beni bilgilendiriyor 📲",
+                "Dijital öğrenme araçlarının, dersleri daha ilgi çekici hale getirdiğini düşünüyorum ⚡",
+                "Öğretmenlerim, dijital araçları derslerde etkili bir şekilde kullanıyor 🔧",
+                "Online öğrenme platformumuzun teknik altyapısı sağlam 🛠️",
+                "Okulun, eğitimde yeniliklere açık bir kurum olduğunu düşünüyorum 🚀"
+            ],
+            "Öğretmen": [
+                // Okul Yönetimi ve Liderlik (10 Soru)
+                "Derslerimi işlemek için gerekli olan teknolojik ve fiziki kaynaklar yeterli 💻",
+                "Sınıf mevcudu, nitelikli bir eğitim vermem için uygun 👥",
+                "Okulun fiziki koşulları (ısıtma, aydınlatma vb.) verimli bir çalışma ortamı sunuyor 🌡️",
+                "Öğretmenler odası ve diğer sosyal alanlar yeterince konforlu 🏢",
+                "Okulun, öğretmenlerin mesleki gelişimine yönelik yeterli bütçe ayırdığını düşünüyorum 💰",
+                "Okulda, öğrencilerin akademik başarısını destekleyecek yeterli kaynak (kütüphane, laboratuvar) var 📚",
+                "Okulun, öğretmenlerin fiziksel ve psikolojik sağlığına önem verdiğini düşünüyorum 💚",
+                "Okulda, veli görüşmelerini rahatça yapabileceğim uygun ortamlar mevcut 🤝",
+                "Okulun genel düzeni ve temizliği yeterli 🧹",
+                "Okuldaki ders dışı etkinlikler, öğrencilerin gelişimine katkı sağlıyor 🎭",
+                
+                // Öğretim Ortamı ve Kaynaklar (10 Soru)
+                "Okul yönetimiyle aramızda açık ve şeffaf bir iletişim var 💬",
+                "Okul yönetiminin, öğretmenlerin fikirlerine ve önerilerine değer verdiğini düşünüyorum 💭",
+                "Okul yönetimi, mesleki sorunlarımda bana destek oluyor 🤝",
+                "Okul yönetimine güveniyorum ❤️",
+                "Okulun vizyonu ve misyonu, yaptığım işe anlam katıyor 🌟",
+                "Okuldaki idari süreçler (evrak işleri, planlama) verimli bir şekilde yürütülüyor 📋",
+                "Okul yönetiminin kararları adil ve eşitlikçi ⚖️",
+                "Okulda, diğer öğretmenlerle etkili bir iş birliği içindeyiz 👨‍🏫",
+                "Okul yönetimi, başarılı çalışmalarımızı takdir ediyor 👏",
+                "Okulun, öğretmenler arasında olumlu bir iş birliği kültürü oluşturduğunu düşünüyorum 🤗",
+                
+                // Mesleki Gelişim ve Destekler (10 Soru)
+                "Okul, mesleki gelişimim için yeterli eğitim ve seminerler sunuyor 📖",
+                "Okuldaki performans değerlendirme sistemi adil ve şeffaf 📊",
+                "Öğretmen olarak, okul içinde kariyer basamaklarını görebiliyorum 🚀",
+                "Okulun, yeni öğretim yöntemlerini denemem için bana fırsatlar verdiğine inanıyorum 💡",
+                "Mesleğimde ilerlemek için gerekli motivasyona sahibim 🔥",
+                "Okulun, ulusal ve uluslararası platformlarda gelişimimi desteklediğini düşünüyorum 🌍",
+                "Yaptığım işin, okulun başarısına önemli katkı sağladığını hissediyorum 🏆",
+                "Okulda aldığım eğitimlerin, öğrencilerimin başarısını artırdığına inanıyorum 📈",
+                "Okulun, öğretmenler için esnek ve destekleyici bir çalışma ortamı sunduğunu düşünüyorum ⚖️",
+                "Mesleki gelişimim için harcadığım çabanın karşılığını alıyorum 💪",
+                
+                // Veli İlişkileri ve Geri Bildirim (10 Soru)
+                "Velilerle olan iletişim kanalları yeterli ve etkili 📞",
+                "Velilerin, okulun faaliyetlerine katılımı yeterli düzeyde 👨‍👩‍👧‍👦",
+                "Velilerden gelen geri bildirimler, öğretim yöntemlerimi geliştirmeme yardımcı oluyor 📝",
+                "Okul, velilerle olumlu bir iş birliği kültürü oluşturmamıza destek oluyor 🤝",
+                "Veli toplantıları ve iletişim günleri verimli geçiyor ⏰",
+                "Okul, velilerin eğitim sürecine dahil olması için yeterli fırsatlar sunuyor 🎯",
+                "Veli beklentilerinin, okulun eğitim hedefleriyle uyumlu olduğunu düşünüyorum 🎭",
+                "Veli sorunları veya şikayetleri, okul yönetimi tarafından adil bir şekilde çözülüyor ⚖️",
+                "Veli iletişimimizin, öğrenci başarısını olumlu etkilediğine inanıyorum 📈",
+                "Okul, velilere yönelik bilgilendirme çalışmalarını düzenli olarak yapıyor 📢",
+                
+                // Eğitimde Teknoloji ve Yenilenme (10 Soru)
+                "Okulun dijital eğitim stratejisi açık ve anlaşılır 🎯",
+                "Uzaktan eğitim platformumuz, dersleri etkili bir şekilde işlememi sağlıyor 💻",
+                "Dijital araçların, öğrencilerin öğrenmesini kolaylaştırdığını düşünüyorum ⚡",
+                "Okul, dijital becerilerimi geliştirmem için gerekli eğitimleri veriyor 📚",
+                "Okul yönetiminin, teknolojik yeniliklere yatırım yaptığını düşünüyorum 💡",
+                "Derslerde kullandığım dijital araçların teknik altyapısı sağlam 🛠️",
+                "Okulun, geleceğin eğitim trendlerine uyum sağladığına inanıyorum 🚀",
+                "Okulun, eğitimde sürekli yenilenmeye açık olduğunu düşünüyorum 🔄",
+                "Okulun dijital dönüşüm sürecini başarılı bir şekilde yönettiğine inanıyorum 🎛️",
+                "Okulun, yeni eğitim yaklaşımlarını benimsemeye istekli olduğunu düşünüyorum 🌟"
+            ],
+            "Veli/Ebeveyn": [
+                // Eğitim Kalitesi ve Akademik Gelişim (10 Soru)
+                "Çocuğumun aldığı eğitimden genel olarak memnunum 📚",
+                "Okulun müfredatı, çocuğumun akademik gelişimini destekliyor 📈",
+                "Öğretmenler, çocuğumun öğrenme tarzına uygun yöntemler kullanıyor 🎯",
+                "Çocuğum, okulda öğrendiklerinin gerçek hayatta işe yarayacağını düşünüyor 🌟",
+                "Okulun, öğrencilerinin potansiyelini en üst düzeye çıkarmak için çalıştığına inanıyorum 🚀",
+                "Okulun sınav ve değerlendirme sistemi, adil ve şeffaf ⚖️",
+                "Okulun, öğrenciler arasında sağlıklı bir rekabet ortamı oluşturduğunu düşünüyorum 🏆",
+                "Okuldaki ders dışı kulüp ve etkinliklerin çeşitliliği yeterli 🎭",
+                "Okulun, çocuğumun ilgi alanlarını keşfetmesine yardımcı olduğuna inanıyorum 🔍",
+                "Okulda verilen eğitim, çocuğumu geleceğe (lise/üniversite) hazırlıyor 🎓",
+                
+                // Okul Yönetimi ve İletişim (10 Soru)
+                "Okul yönetimiyle aramızda açık ve şeffaf bir iletişim var 💬",
+                "Okul yönetimi, velilerin görüş ve önerilerine değer veriyor 💭",
+                "Okulun kuralları, adil ve tutarlı bir şekilde uygulanıyor ⚖️",
+                "Çocuğumla ilgili bir sorun olduğunda, yetkililere ulaşmak kolay 📞",
+                "Okul yönetimine güveniyorum ❤️",
+                "Okulun, öğrencilerin güvenliğini sağlamak için yeterli önlemleri aldığına inanıyorum 🛡️",
+                "Okulun misyon ve vizyonu, beklentilerimle uyumlu 🌟",
+                "Okuldan aldığım genel bilgilendirmeler (duyurular, bültenler) yeterli ve zamanında 📢",
+                "Okulun, velilerin eğitim sürecine katılımını teşvik ettiğini düşünüyorum 🤝",
+                "Okulun, zorbalık ve diğer disiplin sorunlarına karşı etkili çözümler ürettiğine inanıyorum 🛡️",
+                
+                // Öğretmenler ve Rehberlik Hizmetleri (10 Soru)
+                "Çocuğumun öğretmenlerinden memnunum 👨‍🏫",
+                "Öğretmenler, çocuğumun gelişim durumu hakkında bana düzenli ve yapıcı geri bildirim veriyor 📝",
+                "Öğretmenlerin, öğrencilerle saygılı ve destekleyici bir ilişki kurduğunu düşünüyorum 🤗",
+                "Okulun rehberlik servisi, çocuğumun akademik ve duygusal gelişimini destekliyor 💚",
+                "Rehberlik servisinden aldığım hizmetlerden memnunum 👥",
+                "Öğretmenler ve rehberlik servisi, veli kaygılarını ciddiye alıyor 🤝",
+                "Veli toplantılarının verimli geçtiğini düşünüyorum ⏰",
+                "Okul, öğretmenlerin mesleki gelişimine yatırım yapıyor 📖",
+                "Öğretmenlerin, ders dışında da öğrencilerine destek olduğuna inanıyorum 💪",
+                "Çocuğumun öğretmenlerinin, dersleri daha ilgi çekici hale getirmek için çaba gösterdiğini düşünüyorum ⚡",
+                
+                // Okul Ortamı ve Olanaklar (10 Soru)
+                "Okulun fiziki koşulları (derslikler, ortak alanlar) yeterli ve temiz 🏫",
+                "Okulun teknolojik altyapısı (internet, bilgisayar laboratuvarı) beklentilerimi karşılıyor 💻",
+                "Okulun sunduğu sosyal ve spor olanakları yeterli ⚽",
+                "Okul kantinindeki yiyeceklerin sağlıklı olduğunu düşünüyorum 🍎",
+                "Okulun, çocuğumun dışarıda güvenli vakit geçirebileceği alanları var 🌳",
+                "Okulun ulaşım imkanları yeterli ve güvenli 🚌",
+                "Okulun, öğrenciler için sağlıklı bir beslenme politikası olduğuna inanıyorum 🥗",
+                "Okulun kütüphanesi ve diğer kaynakları, çocuğumun derslerine yardımcı oluyor 📚",
+                "Okul, öğrencilerinin sağlığını korumak için gerekli tüm önlemleri alıyor 🏥",
+                "Okulun, çocuğumun hobilerini ve ilgi alanlarını desteklediğini düşünüyorum 🎨",
+                
+                // Eğitimde Teknoloji ve Gelecek (10 Soru)
+                "Okulun dijital eğitim platformu, çocuğumun öğrenme sürecini kolaylaştırıyor 💻",
+                "Okulun, eğitimde teknolojik yenilikleri benimsediğini düşünüyorum 🚀",
+                "Okulun web sitesi ve mobil uygulaması, ihtiyaç duyduğum bilgilere kolayca ulaşmamı sağlıyor 📱",
+                "Okul, dijital dünyada güvenliği sağlamak için yeterli önlemleri alıyor 🔒",
+                "Okulun, geleceğin mesleklerine uygun beceriler kazandırmak için çalıştığını düşünüyorum 🔮",
+                "Okul, online eğitim ve veli toplantıları gibi dijital çözümleri etkili bir şekilde kullanıyor 🌐",
+                "Çocuğumun, dijital okuryazarlığını geliştirmesi için okulun yeterli destek sağladığına inanıyorum 📖",
+                "Okulun, sürekli olarak kendini yenileme çabalarını takdir ediyorum 🔄",
+                "Okulun, geleceğin eğitim trendlerine uyum sağladığını düşünüyorum 📈",
+                "Okulun dijital vizyonunun, çocuğumun eğitimine olumlu katkı sağladığına inanıyorum ✨"
+            ]
         };
 
         // Sistem verileri
@@ -661,44 +658,29 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             // Kategori tanımları (her kategori 10 soru)
-                const categories = {
-                    'Öğrenci': [
-                        'Ders İçeriği ve Öğrenme Ortamı',
-                        'Okul İklimi ve Güvenlik',
-                        'Öğretmen Etkileşimi ve Destek',
-                        'Sosyal ve Kültürel Aktiviteler',
-                        'Fiziksel Olanaklar',
-                        'Karar Alma Süreçleri ve Katılım',
-                        'Bilişim ve Dijitalleşme',
-                        'Okul Dışı Hazırlık ve Ödevler',
-                        'Çeşitlilik ve Kapsayıcılık',
-                        'Genel Memnuniyet ve Tavsiye'
-                    ],
-                    'Öğretmen': [
-                        'Ders İçeriği ve Öğrenme Ortamı',
-                        'Okul İklimi ve Güvenlik',
-                        'Öğretmen Etkileşimi ve Destek',
-                        'Sosyal ve Kültürel Aktiviteler',
-                        'Fiziksel Olanaklar',
-                        'Karar Alma Süreçleri ve Katılım',
-                        'Bilişim ve Dijitalleşme',
-                        'Okul Dışı Hazırlık ve Ödevler',
-                        'Çeşitlilik ve Kapsayıcılık',
-                        'Genel Memnuniyet ve Motivasyon'
-                    ],
-                    'Veli/Ebeveyn': [
-                        'Ders İçeriği ve Öğrenme Ortamı',
-                        'Okul İklimi ve Güvenlik',
-                        'Öğretmen Etkileşimi ve Destek',
-                        'Sosyal ve Kültürel Aktiviteler',
-                        'Fiziksel Olanaklar',
-                        'Karar Alma Süreçleri ve Katılım',
-                        'Bilişim ve Dijitalleşme',
-                        'Okul Dışı Hazırlık ve Ödevler',
-                        'Çeşitlilik ve Kapsayıcılık',
-                        'Genel Memnuniyet ve Tavsiye'
-                    ]
-                };
+            const categories = {
+                'Öğrenci': [
+                    'Eğitim Ortamı ve Olanaklar',
+                    'Yönetim ve İletişim', 
+                    'Mesleki Gelişim ve Destek',
+                    'Değerlendirme ve Geri Bildirim',
+                    'Teknoloji ve Geleceğe Hazırlık'
+                ],
+                'Öğretmen': [
+                    'Okul Yönetimi ve Liderlik',
+                    'Öğretim Ortamı ve Kaynaklar',
+                    'Mesleki Gelişim ve Destekler',
+                    'Veli İlişkileri ve Geri Bildirim',
+                    'Eğitimde Teknoloji ve Yenilenme'
+                ],
+                'Veli/Ebeveyn': [
+                    'Eğitim Kalitesi ve Akademik Gelişim',
+                    'Okul Yönetimi ve İletişim',
+                    'Öğretmenler ve Rehberlik Hizmetleri', 
+                    'Okul Ortamı ve Olanaklar',
+                    'Eğitimde Teknoloji ve Gelecek'
+                ]
+            };
 
             // Her pozisyon için kategori skorlarını hesapla
             surveys.forEach(survey => {
