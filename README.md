@@ -1240,9 +1240,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="text-center bg-green-50 p-10 rounded-lg border-2 border-green-200">
                             <div class="text-8xl mb-6">✅</div>
                             <h2 class="text-3xl font-bold text-green-800 mb-6">Anketiniz Başarıyla Kaydedildi!</h2>
-                            <p class="text-green-700 mb-6 text-lg">
-                                Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde <b>Firebase</b> sisteminde saklandı.
-                            </p>
+                            <p class="text-green-700 mb-6 text-lg sm:text-xl text-center font-medium">Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde <b>Firebase</b> sisteminde saklandı.</p>
                             <div class="bg-blue-50 p-6 rounded-lg border border-blue-200 mb-6">
                                 <p class="text-base text-blue-700">
                                     <strong>📊 Raporlama Bilgisi:</strong> Anket sonuçlarınız güvenli bir şekilde kaydedildi. 
@@ -1618,7 +1616,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     try {
                         // Eğitim anket özetini hazırla
                         const summary = document.getElementById('detailedReport').innerText.slice(0, 2000);
-                        const prompt = `Bir eğitim uzmanı ve pedagog gibi aşağıdaki eğitim kurumu değerlendirme anket raporunu analiz et.\n\nRapor Özeti:\n${summary}\n\nAşağıdaki başlıklarla detaylı, profesyonel ve eğitim odaklı bir analiz yaz:\n\n1. Mevcut Eğitim Durumu\n2. Eğitimde Nelerin İyileştirilmesi Gerekiyor\n3. Bu Durumun Devam Etmesi Halinde Eğitim Kalitesine Etkileri\n\nHer başlık için en az 3-4 cümlelik, eğitim pedagojisine uygun, özgün ve uygulanabilir öneriler içeren bir metin oluştur.`;
+                        const prompt = `Bir eğitim uzmanı ve pedagog gibi aşağıdaki eğitim kurumu değerlendirme anketini analiz et.\n\nRapor Özeti:\n${summary}\n\nAşağıdaki başlıklarla detaylı, profesyonel ve eğitim odaklı bir analiz yaz:\n\n1. Mevcut Eğitim Durumu\n2. Eğitimde Nelerin İyileştirilmesi Gerekiyor\n3. Bu Durumun Devam Etmesi Halinde Eğitim Kalitesine Etkileri\n\nHer başlık için en az 3-4 cümlelik, eğitim pedagojisine uygun, özgün ve uygulanabilir öneriler içeren bir metin oluştur.`;
                         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`, {
                             method: 'POST',
                             headers: { 
@@ -2495,7 +2493,7 @@ async function toggleCompanyStatus(companyKey) {
                 document.getElementById('categoryDetailModal').classList.add('show');
                 return;
             }
-            // Soru setini bul
+            // Soru setini doğrudan al
             const groupQuestions = questions[grup];
             if (!groupQuestions) return;
             // Her kategori 5 soru
