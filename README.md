@@ -911,7 +911,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             console.log('Anket başlatma fonksiyonu çalışıyor...');
             
-            const companyName = document.getElementById('companyName').value.trim();
+            // Kullanıcı tipi kontrolü
+            const userTypeNew = document.getElementById('userTypeNew');
+            const userTypeExisting = document.getElementById('userTypeExisting');
+            let companyName = '';
+            if (userTypeNew && userTypeNew.checked) {
+                companyName = document.getElementById('companyName').value.trim();
+            } else if (userTypeExisting && userTypeExisting.checked) {
+                const existingCompanySelect = document.getElementById('existingCompanySelect');
+                if (existingCompanySelect) {
+                    companyName = existingCompanySelect.value.trim();
+                }
+            }
             const disclaimerAccepted = document.getElementById('acceptDisclaimer').checked;
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
@@ -922,17 +933,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 showModal('⚠️ Uyarı', 'Devam etmek için veri koruma beyanını kabul etmelisiniz.');
                 return;
             }
-            
-            if (!companyName) {
+            // Sadece yeni kullanıcıda kurum adı zorunlu
+            if (userTypeNew && userTypeNew.checked && !companyName) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen kurum adını girin.');
                 return;
             }
-            
+            // Kayıtlı kullanıcıda kurum seçilmediyse uyarı
+            if (userTypeExisting && userTypeExisting.checked && !companyName) {
+                showModal('⚠️ Eksik Bilgi', 'Lütfen kayıtlı bir kurum seçin.');
+                return;
+            }
             if (!selectedJobType) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen rolünüzü seçin (Öğrenci, Öğretmen veya Veli/Ebeveyn).');
                 return;
             }
-            
             if (!firstName || !lastName) {
                 showModal('⚠️ Eksik Bilgi', 'Lütfen adınızı ve soyadınızı girin.');
                 return;
@@ -1153,15 +1167,28 @@ document.addEventListener('DOMContentLoaded', function() {
         async function submitSurvey() {
             try {
                 console.log('Anket gönderiliyor...');
-                const companyName = document.getElementById('companyName').value.trim();
+                // Kullanıcı tipi kontrolü
+                const userTypeNew = document.getElementById('userTypeNew');
+                const userTypeExisting = document.getElementById('userTypeExisting');
+                let companyName = '';
+                if (userTypeNew && userTypeNew.checked) {
+                    companyName = document.getElementById('companyName').value.trim();
+                } else if (userTypeExisting && userTypeExisting.checked) {
+                    const existingCompanySelect = document.getElementById('existingCompanySelect');
+                    if (existingCompanySelect) {
+                        companyName = existingCompanySelect.value.trim();
+                    }
+                }
                 const firstName = document.getElementById('firstName').value.trim() || 'Anonim';
                 const lastName = document.getElementById('lastName').value.trim() || 'Kullanıcı';
                 if (!companyName || !selectedJobType || !answers || answers.length === 0) {
-                    throw new Error('Eksik bilgi: Kurum adı, iş türü ve anket yanıtları gerekli');
+                    showModal('❌ Hata', 'Eksik bilgi: Kurum adı, iş türü ve anket yanıtları gerekli');
+                    return;
                 }
                 const companyResult = await createCompanyIfNotExists(companyName);
                 if (!companyResult.success) {
-                    throw new Error(`Kurum işlemi başarısız: ${companyResult.error}`);
+                    showModal('❌ Hata', `Kurum işlemi başarısız: ${companyResult.error}`);
+                    return;
                 }
                 systemData.surveyData = await loadFromFirebase();
                 // Benzersiz bir key ile responses nesnesine ekle
@@ -1554,7 +1581,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     detayTablo += `<tr>
                         <td class="sub-category flex items-center justify-between">
                             <span>${categoryName}</span>
-                            <button class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs border border-blue-200 hover:bg-blue-200 transition" onclick="showCategoryDetailModal('${grup.replace(/'/g, '')}','${categoryName.replace(/'/g, '')}')">Detay Göster</button>
+                            <button style="display:none" class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs border border-blue-200 hover:bg-blue-200 transition" onclick="showCategoryDetailModal('${grup.replace(/'/g, '')}','${categoryName.replace(/'/g, '')}')">Detay Göster</button>
                         </td>`;
                     if (toplamKategoriCevap > 0) {
                         kategoriCounts.forEach(count => {
