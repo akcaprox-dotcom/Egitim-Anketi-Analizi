@@ -1583,7 +1583,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     detayTablo += `<tr>
                         <td class="sub-category flex items-center justify-between">
                             <span>${categoryName}</span>
-                            <button style="display:none" class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs border border-blue-200 hover:bg-blue-200 transition" onclick="showCategoryDetailModal('${grup.replace(/'/g, '')}','${categoryName.replace(/'/g, '')}')">Detay Göster</button>
+                            <button class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs border border-blue-200 hover:bg-blue-200 transition" onclick="showCategoryDetailModal('${grup.replace(/'/g, '')}','${categoryName.replace(/'/g, '')}', ${categoryIndex})">Detay Göster</button>
                         </td>`;
                     if (toplamKategoriCevap > 0) {
                         kategoriCounts.forEach(count => {
@@ -1595,39 +1595,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     detayTablo += `</tr>`;
                 });
             });
-            detayTablo += `</tbody></table></div>`;
-            
-            // Grafik alanı ekle
-            const totalResponses = surveys.length;
-            const chartTitle = totalResponses > 0 ? 
-                `📊 Kategori Bazlı Memnuniyet Dağılımı (${totalResponses} Katılımcı)` : 
-                '📊 Kategori Bazlı Memnuniyet Dağılımı (Veri Yok)';
-                
-            const chartSection = `
-                <div class="mt-8 bg-white border rounded-lg p-6" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800">${chartTitle}</h3>
-                    <div style="width: 100%; height: 400px;">
-                        <canvas id="categoryChart"></canvas>
-                    </div>
-                    ${totalResponses === 0 ? 
-                        '<p class="text-gray-500 text-center mt-4">Henüz anket verisi bulunmuyor. Grafik veriler geldiğinde otomatik olarak güncellenecektir.</p>' : 
-                        '<p class="text-gray-600 text-sm text-center mt-4">Grafik tüm kategorilerden gelen cevapları birleştirerek genel memnuniyet dağılımını gösterir.</p>'
-                    }
-                </div>
-            `;
-            
-            report += detayTablo + chartSection;
+            detayTablo += `</tbody></table></div>
+            <div class="text-xs text-gray-500 mt-2">En çok işaretlenen şık kırmızı renkte gösterilir. Toplam sütunu, o soruya verilen toplam yanıt sayısıdır.</div>`;
+            document.getElementById('detailedReport').innerHTML = report + detayTablo;
             
             // AI butonunu ekle
-            report += `
+            document.getElementById('detailedReport').innerHTML += `
                 <div class="mt-6 flex flex-col md:flex-row gap-2 items-center justify-center">
                     <button id="aiInterpretBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-bold text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
                         🤖 Eğitim Raporu AI ile Yorumla
                     </button>
                 </div>
             `;
-            
-            document.getElementById('detailedReport').innerHTML = report;
             
             // AI buton eventini ekle
             setTimeout(() => {
@@ -2497,6 +2476,72 @@ async function toggleCompanyStatus(companyKey) {
         function loadDemoData() {
             // Demo veri yükleme fonksiyonu
         }
+
+        // Kategori detay modalı: Her şık için işaretlenme sayısı ve en çok işaretlenenin kırmızı gösterimi
+        function showCategoryDetailModal(grup, categoryName, categoryIndex) {
+            // Survey verilerini bul
+            let allSurveys = [];
+            if (typeof filteredSurveys !== 'undefined' && filteredSurveys !== null) {
+                allSurveys = filteredSurveys;
+            } else if (window.systemData && window.systemData.surveyData && window.systemData.surveyData.responses) {
+                allSurveys = Object.values(window.systemData.surveyData.responses);
+            } else if (typeof surveys !== 'undefined') {
+                allSurveys = surveys;
+            }
+            // Sadece ilgili gruba ait anketler
+            const surveysForGroup = allSurveys.filter(s => s.jobType === grup);
+            if (!surveysForGroup.length) {
+                document.getElementById('categoryDetailContent').innerHTML = '<div class="text-center text-gray-500 py-8">Bu kategoriye ait yanıt bulunamadı.</div>';
+                document.getElementById('categoryDetailModal').classList.add('show');
+                return;
+            }
+            // Soru setini bul
+            const groupQuestions = questions[grup];
+            if (!groupQuestions) return;
+            // Her kategori 5 soru
+            const startIndex = categoryIndex * 5;
+            const endIndex = startIndex + 5;
+            const categoryQuestions = groupQuestions.slice(startIndex, endIndex);
+            let detailHTML = `<div class=\"overflow-x-auto\">
+        <table class=\"min-w-full text-xs border border-gray-300\">
+            <thead>
+                <tr class=\"bg-gray-100\">
+                    <th class=\"px-2 py-2 border\">Soru</th>
+                    <th class=\"px-2 py-2 border\">Hiç Memnun Değilim</th>
+                    <th class=\"px-2 py-2 border\">Memnun Değilim</th>
+                    <th class=\"px-2 py-2 border\">Kararsızım</th>
+                    <th class=\"px-2 py-2 border\">Memnunum</th>
+                    <th class=\"px-2 py-2 border\">Çok Memnunum</th>
+                    <th class=\"px-2 py-2 border\">Toplam</th>
+                </tr>
+            </thead>
+            <tbody>`;
+    categoryQuestions.forEach((question, qIdx) => {
+        const counts = [0, 0, 0, 0, 0];
+        surveysForGroup.forEach(s => {
+            if (s.answers && Array.isArray(s.answers)) {
+                const answerObj = s.answers[startIndex + qIdx];
+                if (answerObj && typeof answerObj.score === 'number' && answerObj.score >= 1 && answerObj.score <= 5) {
+                    counts[answerObj.score - 1]++;
+                }
+            }
+        });
+        const maxCount = Math.max(...counts);
+        const total = counts.reduce((a, b) => a + b, 0);
+        detailHTML += `<tr>
+            <td class=\"border px-2 py-2 text-left\">${question}</td>
+            ${counts.map((count, idx) => {
+                const isMax = count === maxCount && maxCount > 0;
+                return `<td class=\"border px-2 py-2 font-semibold${isMax ? ' text-red-600 bg-red-50' : ''}\">${count}</td>`;
+            }).join('')}
+            <td class=\"border px-2 py-2 font-bold bg-gray-50\">${total}</td>
+        </tr>`;
+    });
+    detailHTML += `</tbody></table></div>
+    <div class=\"text-xs text-gray-500 mt-2\">En çok işaretlenen şık kırmızı renkte gösterilir. Toplam sütunu, o soruya verilen toplam yanıt sayısıdır.</div>`;
+    document.getElementById('categoryDetailContent').innerHTML = detailHTML;
+    document.getElementById('categoryDetailModal').classList.add('show');
+}
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981af265f22bd620',t:'MTc1ODMwNDQ1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
