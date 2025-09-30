@@ -1441,8 +1441,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const memnuniyetLabels = ['5 - Çok Memnunum', '4 - Memnunum', '3 - Kararsızım', '2 - Memnun Değilim', '1 - Hiç Memnun Değilim'];
             const memnuniyetMap = {5:0, 4:1, 3:2, 2:3, 1:4};
             
-            // Kategori tanımları (10'lu yeni yapı)
-            const categoryDefinitions = {
+            // Kategori başlıklarını dinamik olarak calculateCategoryScores fonksiyonundaki categories objesinden al
+            const categories = {
                 'Öğrenci': [
                     'Ders İçeriği ve Öğrenme Ortamı',
                     'Okul İklimi ve Güvenlik',
@@ -1453,7 +1453,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Bilişim ve Dijitalleşme',
                     'Okul Dışı Hazırlık ve Ödevler',
                     'Çeşitlilik ve Kapsayıcılık',
-                    'Genel Memnuniyet ve Tavsiye'
+                    'Genel Memnuniyet ve Tavsiye',
+                    'Kategori 11', 'Kategori 12', 'Kategori 13', 'Kategori 14', 'Kategori 15'
                 ],
                 'Öğretmen': [
                     'Ders İçeriği ve Öğrenme Ortamı',
@@ -1465,7 +1466,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Bilişim ve Dijitalleşme',
                     'Okul Dışı Hazırlık ve Ödevler',
                     'Çeşitlilik ve Kapsayıcılık',
-                    'Genel Memnuniyet ve Motivasyon'
+                    'Genel Memnuniyet ve Motivasyon',
+                    'Kategori 11', 'Kategori 12', 'Kategori 13', 'Kategori 14', 'Kategori 15'
                 ],
                 'Veli/Ebeveyn': [
                     'Ders İçeriği ve Öğrenme Ortamı',
@@ -1477,7 +1479,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Bilişim ve Dijitalleşme',
                     'Okul Dışı Hazırlık ve Ödevler',
                     'Çeşitlilik ve Kapsayıcılık',
-                    'Genel Memnuniyet ve Tavsiye'
+                    'Genel Memnuniyet ve Tavsiye',
+                    'Kategori 11', 'Kategori 12', 'Kategori 13', 'Kategori 14', 'Kategori 15'
                 ]
             };
             
@@ -1559,8 +1562,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 detayTablo += `</tr>`;
                 
                 // Her kategori için ayrı satır
-                const categories = categoryDefinitions[grup] || [];
-                categories.forEach((categoryName, categoryIndex) => {
+                const groupCategories = categories[grup] || [];
+                groupCategories.forEach((categoryName, categoryIndex) => {
                     const kategoriCounts = [0,0,0,0,0];
                     let toplamKategoriCevap = 0;
                     
