@@ -736,55 +736,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Öğretmen': {},
                 'Veli/Ebeveyn': {}
             };
-            
-            // Kategori tanımları (her kategori 10 soru)
-                const categories = {
-                    'Öğrenci': [
-                        'Ders İçeriği ve Öğrenme Ortamı',
-                        'Okul İklimi ve Güvenlik',
-                        'Öğretmen Etkileşimi ve Destek',
-                        'Sosyal ve Kültürel Aktiviteler',
-                        'Fiziksel Olanaklar',
-                        'Karar Alma Süreçleri ve Katılım',
-                        'Bilişim ve Dijitalleşme',
-                        'Okul Dışı Hazırlık ve Ödevler',
-                        'Çeşitlilik ve Kapsayıcılık',
-                        'Genel Memnuniyet ve Tavsiye'
-                    ],
-                    'Öğretmen': [
-                        'Ders İçeriği ve Öğrenme Ortamı',
-                        'Okul İklimi ve Güvenlik',
-                        'Öğretmen Etkileşimi ve Destek',
-                        'Sosyal ve Kültürel Aktiviteler',
-                        'Fiziksel Olanaklar',
-                        'Karar Alma Süreçleri ve Katılım',
-                        'Bilişim ve Dijitalleşme',
-                        'Okul Dışı Hazırlık ve Ödevler',
-                        'Çeşitlilik ve Kapsayıcılık',
-                        'Genel Memnuniyet ve Motivasyon'
-                    ],
-                    'Veli/Ebeveyn': [
-                        'Ders İçeriği ve Öğrenme Ortamı',
-                        'Okul İklimi ve Güvenlik',
-                        'Öğretmen Etkileşimi ve Destek',
-                        'Sosyal ve Kültürel Aktiviteler',
-                        'Fiziksel Olanaklar',
-                        'Karar Alma Süreçleri ve Katılım',
-                        'Bilişim ve Dijitalleşme',
-                        'Okul Dışı Hazırlık ve Ödevler',
-                        'Çeşitlilik ve Kapsayıcılık',
-                        'Genel Memnuniyet ve Tavsiye'
-                    ]
-                };
-
+            // Kategori tanımları (her kategori 10 soru, toplam 15 kategori)
+            const categories = {
+                'Öğrenci': [
+                    'Ders İçeriği ve Öğrenme Ortamı',
+                    'Okul İklimi ve Güvenlik',
+                    'Öğretmen Etkileşimi ve Destek',
+                    'Sosyal ve Kültürel Aktiviteler',
+                    'Fiziksel Olanaklar',
+                    'Karar Alma Süreçleri ve Katılım',
+                    'Bilişim ve Dijitalleşme',
+                    'Okul Dışı Hazırlık ve Ödevler',
+                    'Çeşitlilik ve Kapsayıcılık',
+                    'Genel Memnuniyet ve Tavsiye',
+                    // 5 ek kategori örnek
+                    'Kategori 11', 'Kategori 12', 'Kategori 13', 'Kategori 14', 'Kategori 15'
+                ],
+                'Öğretmen': [
+                    'Ders İçeriği ve Öğrenme Ortamı',
+                    'Okul İklimi ve Güvenlik',
+                    'Öğretmen Etkileşimi ve Destek',
+                    'Sosyal ve Kültürel Aktiviteler',
+                    'Fiziksel Olanaklar',
+                    'Karar Alma Süreçleri ve Katılım',
+                    'Bilişim ve Dijitalleşme',
+                    'Okul Dışı Hazırlık ve Ödevler',
+                    'Çeşitlilik ve Kapsayıcılık',
+                    'Genel Memnuniyet ve Motivasyon',
+                    'Kategori 11', 'Kategori 12', 'Kategori 13', 'Kategori 14', 'Kategori 15'
+                ],
+                'Veli/Ebeveyn': [
+                    'Ders İçeriği ve Öğrenme Ortamı',
+                    'Okul İklimi ve Güvenlik',
+                    'Öğretmen Etkileşimi ve Destek',
+                    'Sosyal ve Kültürel Aktiviteler',
+                    'Fiziksel Olanaklar',
+                    'Karar Alma Süreçleri ve Katılım',
+                    'Bilişim ve Dijitalleşme',
+                    'Okul Dışı Hazırlık ve Ödevler',
+                    'Çeşitlilik ve Kapsayıcılık',
+                    'Genel Memnuniyet ve Tavsiye',
+                    'Kategori 11', 'Kategori 12', 'Kategori 13', 'Kategori 14', 'Kategori 15'
+                ]
+            };
             // Her pozisyon için kategori skorlarını hesapla
             surveys.forEach(survey => {
                 const position = survey.jobType;
                 if (!categoryScores[position]) return;
-                
                 const positionCategories = categories[position];
                 if (!positionCategories) return;
-                
+                // UYARI: Soru sayısı ve kategori sayısı uyumsuzsa uyarı ver
+                if (survey.answers.length !== positionCategories.length * 10) {
+                    console.warn('UYARI: Cevaplanan soru sayısı ile kategori sayısı uyumsuz!');
+                }
                 positionCategories.forEach((category, categoryIndex) => {
                     if (!categoryScores[position][category]) {
                         categoryScores[position][category] = {
@@ -796,15 +800,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             totalCount: 0
                         };
                     }
-                    
                     // Her kategoride 10 soru var
                     const startIndex = categoryIndex * 10;
                     const endIndex = startIndex + 10;
-                    
                     for (let i = startIndex; i < endIndex && i < survey.answers.length; i++) {
                         const score = survey.answers[i].score;
                         categoryScores[position][category].totalCount++;
-                        
                         if (score === 5) categoryScores[position][category]['Çok Memnunum']++;
                         else if (score === 4) categoryScores[position][category]['Memnunum']++;
                         else if (score === 3) categoryScores[position][category]['Kararsızım']++;
@@ -813,7 +814,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             });
-            
             return categoryScores;
         }
 
