@@ -1564,7 +1564,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Her kategori için ayrı satır
                 const groupCategories = categories[grup] || [];
                 const QUESTIONS_PER_CATEGORY = 5;
-                groupCategories.forEach((categoryName, categoryIndex) => {
+                // Sadece ilk 10 kategori gösterilsin
+                groupCategories.slice(0, 10).forEach((categoryName, categoryIndex) => {
                     const kategoriCounts = [0,0,0,0,0];
                     let toplamKategoriCevap = 0;
                     grupSurveys.forEach(s => {
