@@ -779,14 +779,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Kategori 11', 'Kategori 12', 'Kategori 13', 'Kategori 14', 'Kategori 15'
                 ]
             };
-            // Her pozisyon için kategori skorlarını hesapla
+            // Kategori başına soru sayısı dinamik
+            const QUESTIONS_PER_CATEGORY = 5;
             surveys.forEach(survey => {
                 const position = survey.jobType;
                 if (!categoryScores[position]) return;
                 const positionCategories = categories[position];
                 if (!positionCategories) return;
-                // UYARI: Soru sayısı ve kategori sayısı uyumsuzsa uyarı ver
-                if (survey.answers.length !== positionCategories.length * 10) {
+                if (survey.answers.length !== positionCategories.length * QUESTIONS_PER_CATEGORY) {
                     console.warn('UYARI: Cevaplanan soru sayısı ile kategori sayısı uyumsuz!');
                 }
                 positionCategories.forEach((category, categoryIndex) => {
@@ -800,9 +800,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             totalCount: 0
                         };
                     }
-                    // Her kategoride 10 soru var
-                    const startIndex = categoryIndex * 10;
-                    const endIndex = startIndex + 10;
+                    // Her kategoride 5 soru var
+                    const startIndex = categoryIndex * QUESTIONS_PER_CATEGORY;
+                    const endIndex = startIndex + QUESTIONS_PER_CATEGORY;
                     for (let i = startIndex; i < endIndex && i < survey.answers.length; i++) {
                         const score = survey.answers[i].score;
                         categoryScores[position][category].totalCount++;
@@ -1563,15 +1563,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Her kategori için ayrı satır
                 const groupCategories = categories[grup] || [];
+                const QUESTIONS_PER_CATEGORY = 5;
                 groupCategories.forEach((categoryName, categoryIndex) => {
                     const kategoriCounts = [0,0,0,0,0];
                     let toplamKategoriCevap = 0;
-                    
                     grupSurveys.forEach(s => {
-                        // Her kategoride 10 soru var
-                        const startIndex = categoryIndex * 10;
-                        const endIndex = startIndex + 10;
-                        
+                        // Her kategoride 5 soru var
+                        const startIndex = categoryIndex * QUESTIONS_PER_CATEGORY;
+                        const endIndex = startIndex + QUESTIONS_PER_CATEGORY;
                         for (let i = startIndex; i < endIndex && i < s.answers.length; i++) {
                             const score = s.answers[i].score;
                             if (memnuniyetMap[score] !== undefined) {
@@ -1580,7 +1579,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
                     });
-                    
                     detayTablo += `<tr>
                         <td class="sub-category flex items-center justify-between">
                             <span>${categoryName}</span>
