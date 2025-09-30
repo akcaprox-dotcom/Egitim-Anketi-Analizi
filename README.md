@@ -103,9 +103,27 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
                 <h3 class="text-base font-semibold text-gray-700 mb-3">Kurum ve Kişisel Bilgiler</h3>
-                <div class="mb-3">
+                <!-- Kullanıcı Tipi Seçimi -->
+                <div class="mb-3 flex gap-4 items-center">
+                    <label class="flex items-center gap-2">
+                        <input type="radio" name="userType" id="userTypeNew" value="new" checked class="accent-purple-600">
+                        <span>Yeni Kullanıcı</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="radio" name="userType" id="userTypeExisting" value="existing" class="accent-blue-600">
+                        <span>Kayıtlı Kullanıcı</span>
+                    </label>
+                </div>
+                <!-- Yeni Kullanıcı Alanı -->
+                <div class="mb-3" id="newUserArea">
                     <input type="text" id="companyName" placeholder="Kurum adınızı girin (Okul, Üniversite vb.)" 
                         class="w-full border-2 border-purple-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <!-- Kayıtlı Kullanıcı Alanı -->
+                <div class="mb-3 hidden" id="existingUserArea">
+                    <select id="existingCompanySelect" class="w-full border-2 border-blue-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Kayıtlı kurum seçin...</option>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <p class="text-xs text-gray-600 mb-2">Rolünüzü seçin:</p>
@@ -414,7 +432,26 @@ let googleUser = null;
 document.addEventListener('DOMContentLoaded', function() {
     const startBtn = document.getElementById('startSurvey');
     if (startBtn) {
-        startBtn.addEventListener('click', startSurvey);
+        // startSurvey eventini birleştir
+        startBtn.addEventListener('click', function(e) {
+            // Kayıtlı kullanıcı ise seçilen kurumu companyName inputuna yaz
+            if (userTypeExisting && userTypeExisting.checked) {
+                const selected = existingCompanySelect.value;
+                if (!selected) {
+                    e.preventDefault();
+                    showModal('⚠️ Eksik Bilgi', 'Lütfen kayıtlı bir kurum seçin.');
+                    return false;
+                }
+                companyNameInput.value = selected;
+            }
+            // Google ile giriş kontrolü
+            if (!googleUser) {
+                e.preventDefault();
+                alert('Ankete başlamadan önce Google ile giriş yapmalısınız.');
+                return false;
+            }
+            startSurvey();
+        });
     }
     const googleBtn = document.getElementById('googleSignInBtn');
     const userInfoDiv = document.getElementById('googleUserInfo');
@@ -439,18 +476,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         });
     }
-});
-// Anket başlatma butonuna Google ile giriş kontrolü ekle
-document.addEventListener('DOMContentLoaded', function() {
-    const startBtn = document.getElementById('startSurvey');
-    if (startBtn) {
-        startBtn.addEventListener('click', function(e) {
-            if (!googleUser) {
-                e.preventDefault();
-                alert('Ankete başlamadan önce Google ile giriş yapmalısınız.');
-            }
-        }, true);
+    // Kullanıcı tipi seçimi için event listener
+    const userTypeNew = document.getElementById('userTypeNew');
+    const userTypeExisting = document.getElementById('userTypeExisting');
+    const newUserArea = document.getElementById('newUserArea');
+    const existingUserArea = document.getElementById('existingUserArea');
+    const companyNameInput = document.getElementById('companyName');
+    const existingCompanySelect = document.getElementById('existingCompanySelect');
+
+    function toggleUserType() {
+        if (userTypeNew.checked) {
+            newUserArea.classList.remove('hidden');
+            existingUserArea.classList.add('hidden');
+        } else {
+            newUserArea.classList.add('hidden');
+            existingUserArea.classList.remove('hidden');
+            // Kayıtlı kurumları yükle
+            loadExistingCompanies();
+        }
     }
+    if (userTypeNew && userTypeExisting) {
+        userTypeNew.addEventListener('change', toggleUserType);
+        userTypeExisting.addEventListener('change', toggleUserType);
+    }
+
+    async function loadExistingCompanies() {
+        // Firebase'den kurumları çek
+        if (!window.systemData || !window.systemData.surveyData) {
+            window.systemData = window.systemData || {};
+            window.systemData.surveyData = await loadFromFirebase();
+        }
+        const companies = (window.systemData.surveyData && window.systemData.surveyData.companies) || {};
+        existingCompanySelect.innerHTML = '<option value="">Kayıtlı kurum seçin...</option>';
+        Object.values(companies).forEach(company => {
+            existingCompanySelect.innerHTML += `<option value="${company.name}">${company.name}</option>`;
+        });
+    }
+
+    // (startBtn event listener'ı yukarıda tanımlandı, burada tekrar tanımlamaya gerek yok)
+    // Sayfa ilk açıldığında doğru alanı göster
+    toggleUserType();
 });
         // Global değişkenler
         let currentModule = 'survey';
