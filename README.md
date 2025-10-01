@@ -491,7 +491,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             newUserArea.classList.add('hidden');
             existingUserArea.classList.remove('hidden');
-            // Kayıtlı kurumları yükle
             loadExistingCompanies();
         }
     }
@@ -513,9 +512,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // (startBtn event listener'ı yukarıda tanımlandı, burada tekrar tanımlamaya gerek yok)
-    // Sayfa ilk açıldığında doğru alanı göster
+    // Sayfa ilk açıldığında doğru alanı göster ve eğer kayıtlı kullanıcı seçiliyse kurumları yükle
     toggleUserType();
+    if (userTypeExisting.checked) {
+        loadExistingCompanies();
+    }
 });
         // Global değişkenler
         let currentModule = 'survey';
@@ -2479,6 +2480,16 @@ async function toggleCompanyStatus(companyKey) {
             if (!window.systemData) window.systemData = {};
             if (!window.systemData.surveyData) window.systemData.surveyData = {};
             if (!window.systemData.surveyData.responses) window.systemData.surveyData.responses = {};
+            // Demo için örnek kurumlar ekle
+            if (!window.systemData.surveyData.companies) {
+                window.systemData.surveyData.companies = {
+                    "bizimokul": {
+                        name: "BİZİM OKUL",
+                        password: "1234",
+                        status: "Aktif"
+                    }
+                };
+            }
 
             // Örnek anket verileri ekle - Daha fazla veri ile test için
             const demoSurveys = [
@@ -2808,26 +2819,6 @@ async function toggleCompanyStatus(companyKey) {
 
         // Kategori detay modalı: Her şık için işaretlenme sayısı ve en çok işaretlenenin kırmızı gösterimi
         function showCategoryDetailModal(grup, categoryName, categoryIndex) {
-            // Kategori sorularını ve ilk survey'in answers dizisini logla
-            try {
-                const groupKey = Object.keys(questions).find(qk => qk.toLowerCase() === (grup || '').toLowerCase());
-                const groupQuestions = questions[groupKey];
-                const startIndex = categoryIndex * 5;
-                const endIndex = startIndex + 5;
-                const categoryQuestions = groupQuestions ? groupQuestions.slice(startIndex, endIndex) : [];
-                console.log('categoryQuestions:', categoryQuestions);
-                if (surveysForGroup && surveysForGroup.length > 0) {
-                    console.log('first survey answers length:', Array.isArray(surveysForGroup[0].answers) ? surveysForGroup[0].answers.length : 'no answers');
-                    console.log('first survey answers:', surveysForGroup[0].answers);
-                }
-            } catch (e) { console.log('categoryQuestions/answers log error', e); }
-            console.log('Detay modalı çağrıldı:', { grup, categoryName, categoryIndex });
-            // Survey verilerini bul
-            // ...existing code...
-            // surveysForGroup logunu güvenli yap
-            try {
-                console.log('Filtrelenen surveysForGroup:', surveysForGroup ? surveysForGroup.length : 0, (surveysForGroup && surveysForGroup.length > 0) ? surveysForGroup[0] : undefined);
-            } catch (e) { console.log('survey log error', e); }
             // Survey verilerini bul
             let allSurveys = [];
             if (typeof filteredSurveys !== 'undefined' && filteredSurveys !== null) {
@@ -2841,6 +2832,23 @@ async function toggleCompanyStatus(companyKey) {
             // Grup adı karşılaştırmasını küçük harfe çevirerek yap
             const groupKey = Object.keys(questions).find(qk => qk.toLowerCase() === (grup || '').toLowerCase());
             const surveysForGroup = allSurveys.filter(s => (s.jobType || '').toLowerCase() === (grup || '').toLowerCase());
+            // Kategori sorularını ve ilk survey'in answers dizisini logla
+            try {
+                const groupQuestions = questions[groupKey];
+                const startIndex = categoryIndex * 5;
+                const endIndex = startIndex + 5;
+                const categoryQuestions = groupQuestions ? groupQuestions.slice(startIndex, endIndex) : [];
+                console.log('categoryQuestions:', categoryQuestions);
+                if (surveysForGroup && surveysForGroup.length > 0) {
+                    console.log('first survey answers length:', Array.isArray(surveysForGroup[0].answers) ? surveysForGroup[0].answers.length : 'no answers');
+                    console.log('first survey answers:', surveysForGroup[0].answers);
+                }
+            } catch (e) { console.log('categoryQuestions/answers log error', e); }
+            console.log('Detay modalı çağrıldı:', { grup, categoryName, categoryIndex });
+            // surveysForGroup logunu güvenli yap
+            try {
+                console.log('Filtrelenen surveysForGroup:', surveysForGroup ? surveysForGroup.length : 0, (surveysForGroup && surveysForGroup.length > 0) ? surveysForGroup[0] : undefined);
+            } catch (e) { console.log('survey log error', e); }
             // answers dizisi eksik veya kısa ise, 5'lik blokta olmayan indexlere erişmeye çalışma
             document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} Detayları`;
             if (!surveysForGroup.length) {
