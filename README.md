@@ -508,7 +508,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         const companies = (window.systemData.surveyData && window.systemData.surveyData.companies) || {};
         existingCompanySelect.innerHTML = '<option value="">Kayıtlı kurum seçin...</option>';
-        Object.values(companies).forEach(company => {
+        
+        // Kurumları alfabetik sıraya göre sırala
+        const sortedCompanies = Object.values(companies).sort((a, b) => {
+            return a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' });
+        });
+        
+        sortedCompanies.forEach(company => {
             existingCompanySelect.innerHTML += `<option value="${company.name}">${company.name}</option>`;
         });
         
