@@ -43,19 +43,6 @@
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <!-- Sağda açılan kurum seçme modalı (Hastane dosyasından uyarlandı) -->
-    <div id="companySelectModal" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-gray-200 z-50 hidden flex-col p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-700">Kayıtlı Kurum Seç</h3>
-            <button onclick="document.getElementById('companySelectModal').classList.add('hidden')" class="text-2xl text-gray-400 hover:text-gray-700">&times;</button>
-        </div>
-        <div class="mb-4">
-            <select id="existingCompanySelectModal" class="w-full border-2 border-blue-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <option value="">Kayıtlı kurum seçin...</option>
-            </select>
-        </div>
-        <button onclick="selectCompanyFromModal()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700">Kurumu Seç</button>
-    </div>
     <!-- Ana Navigasyon -->
     <nav class="gradient-bg text-white p-3 shadow-lg sticky top-0 z-50">
         <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2 md:gap-0">
@@ -112,7 +99,6 @@
                         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> Google ile Giriş Yap
                     </button>
                     <div id="googleUserInfo" class="text-xs text-green-700 font-medium hidden"></div>
-                    <div id="registeredUserInfo" class="text-xs text-blue-700 font-medium hidden"></div>
                 </div>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -135,12 +121,9 @@
                 </div>
                 <!-- Kayıtlı Kullanıcı Alanı -->
                 <div class="mb-3 hidden" id="existingUserArea">
-                    <div class="flex gap-2">
-                        <select id="existingCompanySelect" class="w-full border-2 border-blue-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Kayıtlı kurum seçin...</option>
-                        </select>
-                        <button type="button" onclick="document.getElementById('companySelectModal').classList.remove('hidden');loadExistingCompaniesModal();" class="bg-blue-100 text-blue-700 px-2 rounded hover:bg-blue-200 text-xs font-semibold">Tümünü Gör</button>
-                    </div>
+                    <select id="existingCompanySelect" class="w-full border-2 border-blue-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Kayıtlı kurum seçin...</option>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <p class="text-xs text-gray-600 mb-2">Rolünüzü seçin:</p>
@@ -433,33 +416,6 @@
     </div>
 
     <script>
-    // Modal için kurumları yükle
-    async function loadExistingCompaniesModal() {
-        if (!window.systemData || !window.systemData.surveyData) return;
-        const companies = (window.systemData.surveyData && window.systemData.surveyData.companies) || {};
-        const modalSelect = document.getElementById('existingCompanySelectModal');
-        if (!modalSelect) return;
-        modalSelect.innerHTML = '<option value="">Kayıtlı kurum seçin...</option>';
-        Object.values(companies).forEach(company => {
-            modalSelect.innerHTML += `<option value="${company.name}">${company.name}</option>`;
-        });
-    }
-
-    // Modalda kurum seçilince inputa yaz (seçilen option'un değeri companyName olacak)
-    function selectCompanyFromModal() {
-        const select = document.getElementById('existingCompanySelectModal');
-        const companyNameInput = document.getElementById('companyName');
-        if (select && companyNameInput) {
-            if (select.value) {
-                companyNameInput.value = select.value;
-                // Ana select'i de güncelle
-                const mainSelect = document.getElementById('existingCompanySelect');
-                if (mainSelect) mainSelect.value = select.value;
-            }
-            document.getElementById('companySelectModal').classList.add('hidden');
-        }
-    }
-    window.selectCompanyFromModal = selectCompanyFromModal;
 // Firebase config ve Google Sign-In logic (hastane.html ile aynı)
 const firebaseConfig = {
     apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
@@ -555,119 +511,19 @@ document.addEventListener('DOMContentLoaded', function() {
         Object.values(companies).forEach(company => {
             existingCompanySelect.innerHTML += `<option value="${company.name}">${company.name}</option>`;
         });
-    }
-
-    // Admin / listeden seçim yapıldığında anket ekranındaki "Kayıtlı Kullanıcı" seçeneğini otomatik doldurmak için
-    function selectCompanyForExistingUser(companyName) {
-        // Eğer DOM elemanları hazırsa doğrudan ata, değilse kısa süre sonra deneyin
-        const trySet = () => {
-            const userTypeExisting = document.getElementById('userTypeExisting');
-            const userTypeNew = document.getElementById('userTypeNew');
-            const existingCompanySelect = document.getElementById('existingCompanySelect');
-            const existingUserArea = document.getElementById('existingUserArea');
-            const newUserArea = document.getElementById('newUserArea');
+        
+        // Dropdown'dan seçim yapıldığında company name input'una aktarma
+        existingCompanySelect.addEventListener('change', function() {
             const companyNameInput = document.getElementById('companyName');
-
-            if (!existingCompanySelect) return false;
-
-            // Eğer seçenekler yüklü değilse, loadExistingCompanies ile yükleyip sonra set et
-            const optionExists = Array.from(existingCompanySelect.options).some(o => o.value === companyName || o.text === companyName);
-            if (!optionExists) {
-                // yükle ve tekrar dene
-                loadExistingCompanies().then(() => {
-                    // küçük bir gecikme ile set et
-                    setTimeout(() => selectCompanyForExistingUser(companyName), 150);
-                });
-                return true;
+            if (companyNameInput && this.value) {
+                companyNameInput.value = this.value;
             }
-
-            // Select'te companyName'i seç
-            for (let i = 0; i < existingCompanySelect.options.length; i++) {
-                const opt = existingCompanySelect.options[i];
-                if (opt.value === companyName || opt.text === companyName) {
-                    existingCompanySelect.selectedIndex = i;
-                    break;
-                }
-            }
-
-            // Kullanıcı tipini kayıtlıya geçir ve alanları göster
-            if (userTypeExisting && userTypeNew) {
-                userTypeExisting.checked = true;
-                userTypeNew.checked = false;
-            }
-            if (existingUserArea && newUserArea) {
-                existingUserArea.classList.remove('hidden');
-                newUserArea.classList.add('hidden');
-            }
-
-            // companyName inputunu da doldur (anlık kontrol için)
-            if (companyNameInput) companyNameInput.value = companyName;
-
-            // Survey modülünü aç
-            showModule('survey');
-
-            // Scroll veya odaklandırma
-            if (existingCompanySelect && existingCompanySelect.focus) existingCompanySelect.focus();
-            // Kısa bir gecikme ile anketi başlatmayı dene (startSurvey kendi kontrollerini uygular)
-            setTimeout(() => {
-                try { startSurvey(); } catch (e) { console.warn('selectCompanyForExistingUser auto start failed:', e); }
-            }, 250);
-            return true;
-        };
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', trySet);
-        } else {
-            trySet();
-        }
+        });
     }
 
     // (startBtn event listener'ı yukarıda tanımlandı, burada tekrar tanımlamaya gerek yok)
     // Sayfa ilk açıldığında doğru alanı göster
     toggleUserType();
-
-    // Kayıtlı kurum seçimi değiştiğinde global state ve gösterimi güncelle
-    const existingCompanySelectEl = document.getElementById('existingCompanySelect');
-    const registeredUserInfoEl = document.getElementById('registeredUserInfo');
-    if (existingCompanySelectEl) {
-        existingCompanySelectEl.addEventListener('change', function(e) {
-            const val = (e.target.value || '').trim();
-            if (val) {
-                // global olarak seçilen kayıtlı kurumu kaydet
-                window.registeredCompany = val;
-                // kullanıcı tipini kayıtlıya geçir
-                const userTypeExisting = document.getElementById('userTypeExisting');
-                const userTypeNew = document.getElementById('userTypeNew');
-                if (userTypeExisting && userTypeNew) {
-                    userTypeExisting.checked = true;
-                    userTypeNew.checked = false;
-                }
-                // alan göster/gizle
-                const newUserArea = document.getElementById('newUserArea');
-                const existingUserArea = document.getElementById('existingUserArea');
-                if (existingUserArea && newUserArea) {
-                    existingUserArea.classList.remove('hidden');
-                    newUserArea.classList.add('hidden');
-                }
-                // badge göster
-                if (registeredUserInfoEl) {
-                    registeredUserInfoEl.textContent = `Kayıtlı kurum seçildi: ${val}`;
-                    registeredUserInfoEl.classList.remove('hidden');
-                }
-
-                // Kısa bir gecikme ile startSurvey çağırmayı dene (startSurvey kendi kontrollerini yapar)
-                setTimeout(() => {
-                    try { startSurvey(); } catch (e) { console.warn('auto startSurvey failed:', e); }
-                }, 250);
-            } else {
-                window.registeredCompany = null;
-                if (registeredUserInfoEl) {
-                    registeredUserInfoEl.classList.add('hidden');
-                    registeredUserInfoEl.textContent = '';
-                }
-            }
-        });
-    }
 });
         // Global değişkenler
         let currentModule = 'survey';
@@ -973,7 +829,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             showModule('survey');
-            loadDemoData();
+            // loadDemoData(); // Demo veriler devre dışı bırakıldı - sadece gerçek Firebase verileri kullanılıyor
         });
 
         function setupEventListeners() {
@@ -1731,7 +1587,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
                     detayTablo += `<tr>
-                        <td class="sub-category">
+                        <td class="sub-category flex items-center justify-between">
                             <span>${categoryName}</span>
                         </td>`;
                     if (toplamKategoriCevap > 0) {
@@ -1748,14 +1604,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="text-xs text-gray-500 mt-2">En çok işaretlenen şık kırmızı renkte gösterilir. Toplam sütunu, o soruya verilen toplam yanıt sayısıdır.</div>`;
             document.getElementById('detailedReport').innerHTML = report + detayTablo;
             
-            // AI butonunu ekle
-            document.getElementById('detailedReport').innerHTML += `
-                <div class="mt-6 flex flex-col md:flex-row gap-2 items-center justify-center">
-                    <button id="aiInterpretBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-bold text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                        🤖 Eğitim Raporu AI ile Yorumla
-                    </button>
-                </div>
-            `;
+            // AI butonunu ekle - GİZLENDİ
+            // document.getElementById('detailedReport').innerHTML += `
+            //     <div class="mt-6 flex flex-col md:flex-row gap-2 items-center justify-center">
+            //         <button id="aiInterpretBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-bold text-sm hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+            //             🤖 Eğitim Raporu AI ile Yorumla
+            //         </button>
+            //     </div>
+            // `;
             
             // AI buton eventini ekle
             setTimeout(() => {
@@ -2028,7 +1884,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             </span>
                         </td>
                         <td class="px-4 py-3">
-                            <button onclick="selectCompanyForExistingUser('${company.name}')" class="text-blue-600 hover:text-blue-800 mr-2">➡ Kayıtlı Olarak Seç</button>
                             <button onclick="showAdminCompanyReport('${company.name}')" class="text-green-600 hover:text-green-800 mr-2">📊 Rapor</button>
                             <button onclick="resetCompanyPassword('${companyKey}')" class="text-orange-600 hover:text-orange-800 mr-2">🔄 Şifre</button>
                             <button onclick="toggleCompanyStatus('${companyKey}')" class="text-xs font-bold px-2 py-1 rounded ${status === 'Aktif' ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'}">
@@ -2954,6 +2809,33 @@ async function toggleCompanyStatus(companyKey) {
             demoSurveys.forEach(survey => {
                 window.systemData.surveyData.responses[survey.id] = survey;
             });
+
+            // Demo kurum bilgisini companies objesine de ekle
+            if (!window.systemData.surveyData.companies) {
+                window.systemData.surveyData.companies = {};
+            }
+            
+            // Demo Okul kurumunu companies listesine ekle
+            if (!window.systemData.surveyData.companies['demo-okul']) {
+                window.systemData.surveyData.companies['demo-okul'] = {
+                    name: 'Demo Okul',
+                    password: 'DEMO123456789',
+                    createdAt: new Date().toISOString(),
+                    totalResponses: demoSurveys.length,
+                    status: 'Aktif'
+                };
+            }
+            
+            // ÖRNEK OKUL kurumunu da ekle
+            if (!window.systemData.surveyData.companies['ornek-okul']) {
+                window.systemData.surveyData.companies['ornek-okul'] = {
+                    name: 'ÖRNEK OKUL',
+                    password: 'ORNEK123456789',
+                    createdAt: new Date().toISOString(),
+                    totalResponses: 0,
+                    status: 'Aktif'
+                };
+            }
 
             console.log('Demo veriler yüklendi:', Object.keys(window.systemData.surveyData.responses).length, 'anket');
         }
