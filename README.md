@@ -504,22 +504,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadExistingCompanies() {
         console.log('loadExistingCompanies çağrıldı');
-        // Önce localStorage'dan dene
+        // LocalStorage'dan oku
         let companies = JSON.parse(localStorage.getItem('companies') || '{}');
         console.log('LocalStorage kurumları:', companies);
-        if (Object.keys(companies).length === 0) {
-            // LocalStorage boşsa Firebase'den çek
-            console.log('LocalStorage boş, Firebase yükleniyor...');
-            if (!window.systemData || !window.systemData.surveyData) {
-                window.systemData = window.systemData || {};
-                window.systemData.surveyData = await loadFromFirebase();
-            }
-            companies = (window.systemData.surveyData && window.systemData.surveyData.companies) || {};
-            // Firebase'den çekileni localStorage'a kaydet
-            if (Object.keys(companies).length > 0) {
-                localStorage.setItem('companies', JSON.stringify(companies));
-            }
-        }
         console.log('Final kurumlar:', companies);
         existingCompanySelect.innerHTML = '<option value="">Kayıtlı kurum seçin...</option>';
         Object.values(companies).forEach(company => {
@@ -1080,54 +1067,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-        // Firebase'den verileri yükle
+        // Firebase'den verileri yükle - Artık localStorage kullanılıyor
         async function loadFromFirebase() {
-            try {
-                const response = await fetch(`${FIREBASE_DB_URL}/surveyData.json`);
-                if (!response.ok) throw new Error('Firebase veri yükleme hatası');
-                const data = await response.json();
-                systemData.surveyData = data || {
-                    surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
-                    createdAt: new Date().toISOString(),
-                    responses: {},
-                    statistics: {
-                        totalResponses: 0,
-                        averageScore: 0,
-                        lastUpdated: new Date().toISOString()
-                    },
-                    companies: {}
-                };
-                return systemData.surveyData;
-            } catch (error) {
-                console.error('Firebase yükleme hatası:', error);
-                const defaultData = {
-                    surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
-                    createdAt: new Date().toISOString(),
-                    responses: {},
-                    statistics: {
-                        totalResponses: 0,
-                        averageScore: 0,
-                        lastUpdated: new Date().toISOString()
-                    },
-                    companies: {}
-                };
-                systemData.surveyData = defaultData;
-                return defaultData;
+            // Local storage'dan oku
+            const localData = localStorage.getItem('surveyData');
+            if (localData) {
+                return JSON.parse(localData);
             }
+            // Varsayılan veri
+            const defaultData = {
+                surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
+                createdAt: new Date().toISOString(),
+                responses: {},
+                statistics: {
+                    totalResponses: 0,
+                    averageScore: 0,
+                    lastUpdated: new Date().toISOString()
+                },
+                companies: {}
+            };
+            localStorage.setItem('surveyData', JSON.stringify(defaultData));
+            return defaultData;
         }
 
-        // Firebase'e PATCH ile veri kaydet (responses nesnesi olarak)
+        // Firebase'e PATCH ile veri kaydet - Artık localStorage kullanılıyor
         async function saveToFirebase(patchObj) {
             try {
-                const response = await fetch(`${FIREBASE_DB_URL}/surveyData.json`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(patchObj)
-                });
-                if (!response.ok) throw new Error('Firebase veri kaydetme hatası');
+                // Mevcut veriyi oku
+                const currentData = JSON.parse(localStorage.getItem('surveyData') || '{}');
+                // Patch uygula
+                const newData = { ...currentData, ...patchObj };
+                // Kaydet
+                localStorage.setItem('surveyData', JSON.stringify(newData));
                 return { success: true };
             } catch (error) {
-                console.error('Firebase kayıt hatası:', error);
+                console.error('Local storage kayıt hatası:', error);
                 return { success: false, error: error.message };
             }
         }
@@ -1135,42 +1109,31 @@ document.addEventListener('DOMContentLoaded', function() {
         async function createCompanyIfNotExists(companyName) {
             try {
                 console.log('Kurum kontrol ediliyor:', companyName);
-                if (!systemData.surveyData) {
-                    systemData.surveyData = await loadFromFirebase();
-                }
-                const existingCompany = Object.entries(systemData.surveyData.companies || {})
+                // Local storage'dan oku
+                let companies = JSON.parse(localStorage.getItem('companies') || '{}');
+                const existingCompany = Object.entries(companies)
                     .find(([key, company]) => company.name.toLowerCase() === companyName.toLowerCase());
                 if (existingCompany) {
                     // Eski kurumda status yoksa ekle
                     if (!existingCompany[1].status) {
                         existingCompany[1].status = 'Aktif';
-                        await saveToFirebase({ companies: systemData.surveyData.companies });
+                        localStorage.setItem('companies', JSON.stringify(companies));
                     }
                     console.log('Mevcut kurum bulundu:', existingCompany[1]);
                     return { success: true, key: existingCompany[0], password: existingCompany[1].password };
                 }
                 const companyKey = companyName.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10) + '-' + Date.now();
                 const newPassword = generateCompanyPassword();
-                if (!systemData.surveyData.companies) {
-                    systemData.surveyData.companies = {};
-                }
-                systemData.surveyData.companies[companyKey] = {
+                companies[companyKey] = {
                     name: companyName,
                     password: newPassword,
                     createdAt: new Date().toISOString(),
                     totalResponses: 0,
                     status: 'Aktif'
                 };
-                const saveResult = await saveToFirebase({ companies: systemData.surveyData.companies });
-                // Local storage'a da kaydet
-                let localCompanies = JSON.parse(localStorage.getItem('companies') || '{}');
-                localCompanies[companyKey] = systemData.surveyData.companies[companyKey];
-                localStorage.setItem('companies', JSON.stringify(localCompanies));
-                if (saveResult.success) {
-                    return { success: true, key: companyKey, password: newPassword };
-                } else {
-                    return { success: false, error: saveResult.error };
-                }
+                localStorage.setItem('companies', JSON.stringify(companies));
+                console.log('Yeni kurum oluşturuldu:', companyName);
+                return { success: true, key: companyKey, password: newPassword };
             } catch (error) {
                 console.error('Kurum oluşturma hatası:', error);
                 return { success: false, error: error.message };
@@ -1212,7 +1175,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     showModal('❌ Hata', `Kurum işlemi başarısız: ${companyResult.error}`);
                     return;
                 }
-                systemData.surveyData = await loadFromFirebase();
+                // Local storage'dan oku
+                let surveyData = JSON.parse(localStorage.getItem('surveyData') || '{}');
+                if (!surveyData.responses) surveyData.responses = {};
+                if (!surveyData.statistics) surveyData.statistics = { totalResponses: 0, averageScore: 0, lastUpdated: new Date().toISOString() };
+                if (!surveyData.companies) surveyData.companies = {};
                 // Benzersiz bir key ile responses nesnesine ekle
                 const responseKey = 'survey_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 const surveyResponse = {
@@ -1227,61 +1194,45 @@ document.addEventListener('DOMContentLoaded', function() {
                     averageScore: (answers.reduce((sum, answer) => sum + answer.score, 0) / answers.length).toFixed(2),
                     duration: document.getElementById('timeElapsed').textContent.split(': ')[1] || '00:00'
                 };
-                if (!systemData.surveyData.responses) {
-                    systemData.surveyData.responses = {};
-                }
-                systemData.surveyData.responses[responseKey] = surveyResponse;
+                surveyData.responses[responseKey] = surveyResponse;
                 // İstatistikleri güncelle
-                const allResponses = Object.values(systemData.surveyData.responses);
-                if (!systemData.surveyData.statistics) {
-                    systemData.surveyData.statistics = {
-                        totalResponses: 0,
-                        averageScore: 0,
-                        lastUpdated: new Date().toISOString()
-                    };
-                }
-                systemData.surveyData.statistics.totalResponses = allResponses.length;
-                systemData.surveyData.statistics.averageScore = (
+                const allResponses = Object.values(surveyData.responses);
+                surveyData.statistics.totalResponses = allResponses.length;
+                surveyData.statistics.averageScore = (
                     allResponses.reduce((sum, r) => sum + parseFloat(r.averageScore), 0) / allResponses.length
                 ).toFixed(2);
-                systemData.surveyData.statistics.lastUpdated = new Date().toISOString();
-                if (companyResult && systemData.surveyData.companies[companyResult.key]) {
-                    systemData.surveyData.companies[companyResult.key].totalResponses =
+                surveyData.statistics.lastUpdated = new Date().toISOString();
+                if (companyResult && surveyData.companies[companyResult.key]) {
+                    surveyData.companies[companyResult.key].totalResponses =
                         allResponses.filter(r =>
                             r.companyName.toLowerCase() === companyName.toLowerCase()
                         ).length;
                 }
-                // Firebase'e responses, statistics ve companies patch olarak gönder
-                const saveResult = await saveToFirebase({
-                    responses: systemData.surveyData.responses,
-                    statistics: systemData.surveyData.statistics,
-                    companies: systemData.surveyData.companies
-                });
-                if (saveResult.success) {
-                    document.getElementById('surveySection').innerHTML = `
-                        <div class="text-center bg-green-50 p-10 rounded-lg border-2 border-green-200">
-                            <div class="text-8xl mb-6">✅</div>
-                            <h2 class="text-3xl font-bold text-green-800 mb-6">Anketiniz Başarıyla Kaydedildi!</h2>
-                            <p class="text-green-700 mb-6 text-lg sm:text-xl text-center font-medium">Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde <b>Firebase</b> sisteminde saklandı.</p>
-                            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200 mb-6">
-                                <p class="text-base text-blue-700">
-                                    <strong>📊 Raporlama Bilgisi:</strong> Anket sonuçlarınız güvenli bir şekilde kaydedildi. 
-                                    Kurum yöneticiniz raporları görüntüleyebilir ve analiz edebilir.
-                                </p>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <button onclick="showModule('company')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-lg font-semibold">
-                                    🏫 Kurum Portalına Git
-                                </button>
-                                <button onclick="location.reload()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors text-lg font-semibold">
-                                    🔄 Yeni Anket Başlat
-                                </button>
-                            </div>
+                // Local storage'a kaydet
+                localStorage.setItem('surveyData', JSON.stringify(surveyData));
+                console.log('Anket başarıyla kaydedildi');
+                
+                document.getElementById('surveySection').innerHTML = `
+                    <div class="text-center bg-green-50 p-10 rounded-lg border-2 border-green-200">
+                        <div class="text-8xl mb-6">✅</div>
+                        <h2 class="text-3xl font-bold text-green-800 mb-6">Anketiniz Başarıyla Kaydedildi!</h2>
+                        <p class="text-green-700 mb-6 text-lg sm:text-xl text-center font-medium">Değerli görüşleriniz için teşekkür ederiz. Anket yanıtlarınız güvenli bir şekilde <b>localStorage</b> sisteminde saklandı.</p>
+                        <div class="bg-blue-50 p-6 rounded-lg border border-blue-200 mb-6">
+                            <p class="text-base text-blue-700">
+                                <strong>📊 Raporlama Bilgisi:</strong> Anket sonuçlarınız güvenli bir şekilde kaydedildi. 
+                                Kurum yöneticiniz raporları görüntüleyebilir ve analiz edebilir.
+                            </p>
                         </div>
-                    `;
-                } else {
-                    throw new Error(`Anket kaydedilemedi: ${saveResult.error}`);
-                }
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button onclick="showModule('company')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-lg font-semibold">
+                                🏫 Kurum Portalına Git
+                            </button>
+                            <button onclick="location.reload()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors text-lg font-semibold">
+                                🔄 Yeni Anket Başlat
+                            </button>
+                        </div>
+                    </div>
+                `;
             } catch (error) {
                 console.error('Anket gönderme hatası:', error);
                 showModal('❌ Hata', `Anket gönderilirken bir hata oluştu:<br><br><strong>Hata:</strong> ${error.message}<br><br>Lütfen sayfayı yenileyip tekrar deneyin.`);
