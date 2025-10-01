@@ -491,7 +491,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             newUserArea.classList.add('hidden');
             existingUserArea.classList.remove('hidden');
-            loadExistingCompanies();
+            // Kayıtlı kurumları yükle - biraz bekle
+            setTimeout(() => {
+                loadExistingCompanies();
+            }, 100);
         }
     }
     if (userTypeNew && userTypeExisting) {
@@ -500,23 +503,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadExistingCompanies() {
-        // Firebase'den kurumları çek
-        if (!window.systemData || !window.systemData.surveyData) {
-            window.systemData = window.systemData || {};
-            window.systemData.surveyData = await loadFromFirebase();
+        console.log('loadExistingCompanies çağrıldı');
+        // Önce localStorage'dan dene
+        let companies = JSON.parse(localStorage.getItem('companies') || '{}');
+        console.log('LocalStorage kurumları:', companies);
+        if (Object.keys(companies).length === 0) {
+            // LocalStorage boşsa Firebase'den çek
+            console.log('LocalStorage boş, Firebase yükleniyor...');
+            if (!window.systemData || !window.systemData.surveyData) {
+                window.systemData = window.systemData || {};
+                window.systemData.surveyData = await loadFromFirebase();
+            }
+            companies = (window.systemData.surveyData && window.systemData.surveyData.companies) || {};
+            // Firebase'den çekileni localStorage'a kaydet
+            if (Object.keys(companies).length > 0) {
+                localStorage.setItem('companies', JSON.stringify(companies));
+            }
         }
-        const companies = (window.systemData.surveyData && window.systemData.surveyData.companies) || {};
+        console.log('Final kurumlar:', companies);
         existingCompanySelect.innerHTML = '<option value="">Kayıtlı kurum seçin...</option>';
         Object.values(companies).forEach(company => {
-            existingCompanySelect.innerHTML += `<option value="${company.name}">${company.name}</option>`;
+            if (company.status !== 'Pasif') { // Sadece aktif kurumları göster
+                console.log('Kurum ekleniyor:', company.name);
+                existingCompanySelect.innerHTML += `<option value="${company.name}">${company.name}</option>`;
+            }
         });
+        console.log('Select HTML:', existingCompanySelect.innerHTML);
     }
 
-    // Sayfa ilk açıldığında doğru alanı göster ve eğer kayıtlı kullanıcı seçiliyse kurumları yükle
+    // (startBtn event listener'ı yukarıda tanımlandı, burada tekrar tanımlamaya gerek yok)
+    // Sayfa ilk açıldığında doğru alanı göster
     toggleUserType();
-    if (userTypeExisting.checked) {
-        loadExistingCompanies();
-    }
 });
         // Global değişkenler
         let currentModule = 'survey';
@@ -531,7 +548,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // Firebase Realtime Database ayarları
-    const FIREBASE_DB_URL = 'https://egitim-37c53-default-rtdb.europe-west1.firebasedatabase.app';
+    const FIREBASE_DB_URL = 'https://akcaprox-anket-default-rtdb.europe-west1.firebasedatabase.app';
         // responses artık bir nesne olarak tutulacak (array değil)
 
         // Soru setleri
@@ -1145,6 +1162,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     status: 'Aktif'
                 };
                 const saveResult = await saveToFirebase({ companies: systemData.surveyData.companies });
+                // Local storage'a da kaydet
+                let localCompanies = JSON.parse(localStorage.getItem('companies') || '{}');
+                localCompanies[companyKey] = systemData.surveyData.companies[companyKey];
+                localStorage.setItem('companies', JSON.stringify(localCompanies));
                 if (saveResult.success) {
                     return { success: true, key: companyKey, password: newPassword };
                 } else {
@@ -2480,16 +2501,21 @@ async function toggleCompanyStatus(companyKey) {
             if (!window.systemData) window.systemData = {};
             if (!window.systemData.surveyData) window.systemData.surveyData = {};
             if (!window.systemData.surveyData.responses) window.systemData.surveyData.responses = {};
-            // Demo için örnek kurumlar ekle
-            if (!window.systemData.surveyData.companies) {
-                window.systemData.surveyData.companies = {
-                    "bizimokul": {
-                        name: "BİZİM OKUL",
-                        password: "1234",
-                        status: "Aktif"
-                    }
-                };
-            }
+            if (!window.systemData.surveyData.companies) window.systemData.surveyData.companies = {};
+
+            // Demo kurum ekle
+            window.systemData.surveyData.companies['demo-key'] = {
+                name: 'Demo Okul',
+                password: 'DEMO123',
+                createdAt: new Date().toISOString(),
+                totalResponses: 3,
+                status: 'Aktif'
+            };
+
+            // Local storage'a kaydet
+            let localCompanies = JSON.parse(localStorage.getItem('companies') || '{}');
+            localCompanies['demo-key'] = window.systemData.surveyData.companies['demo-key'];
+            localStorage.setItem('companies', JSON.stringify(localCompanies));
 
             // Örnek anket verileri ekle - Daha fazla veri ile test için
             const demoSurveys = [
@@ -2819,6 +2845,26 @@ async function toggleCompanyStatus(companyKey) {
 
         // Kategori detay modalı: Her şık için işaretlenme sayısı ve en çok işaretlenenin kırmızı gösterimi
         function showCategoryDetailModal(grup, categoryName, categoryIndex) {
+            // Kategori sorularını ve ilk survey'in answers dizisini logla
+            try {
+                const groupKey = Object.keys(questions).find(qk => qk.toLowerCase() === (grup || '').toLowerCase());
+                const groupQuestions = questions[groupKey];
+                const startIndex = categoryIndex * 5;
+                const endIndex = startIndex + 5;
+                const categoryQuestions = groupQuestions ? groupQuestions.slice(startIndex, endIndex) : [];
+                console.log('categoryQuestions:', categoryQuestions);
+                if (surveysForGroup && surveysForGroup.length > 0) {
+                    console.log('first survey answers length:', Array.isArray(surveysForGroup[0].answers) ? surveysForGroup[0].answers.length : 'no answers');
+                    console.log('first survey answers:', surveysForGroup[0].answers);
+                }
+            } catch (e) { console.log('categoryQuestions/answers log error', e); }
+            console.log('Detay modalı çağrıldı:', { grup, categoryName, categoryIndex });
+            // Survey verilerini bul
+            // ...existing code...
+            // surveysForGroup logunu güvenli yap
+            try {
+                console.log('Filtrelenen surveysForGroup:', surveysForGroup ? surveysForGroup.length : 0, (surveysForGroup && surveysForGroup.length > 0) ? surveysForGroup[0] : undefined);
+            } catch (e) { console.log('survey log error', e); }
             // Survey verilerini bul
             let allSurveys = [];
             if (typeof filteredSurveys !== 'undefined' && filteredSurveys !== null) {
@@ -2832,24 +2878,6 @@ async function toggleCompanyStatus(companyKey) {
             // Grup adı karşılaştırmasını küçük harfe çevirerek yap
             const groupKey = Object.keys(questions).find(qk => qk.toLowerCase() === (grup || '').toLowerCase());
             const surveysForGroup = allSurveys.filter(s => (s.jobType || '').toLowerCase() === (grup || '').toLowerCase());
-            // Kategori sorularını ve ilk survey'in answers dizisini logla
-            try {
-                const groupQuestions = questions[groupKey];
-                const startIndex = categoryIndex * 5;
-                const endIndex = startIndex + 5;
-                const categoryQuestions = groupQuestions ? groupQuestions.slice(startIndex, endIndex) : [];
-                console.log('categoryQuestions:', categoryQuestions);
-                if (surveysForGroup && surveysForGroup.length > 0) {
-                    console.log('first survey answers length:', Array.isArray(surveysForGroup[0].answers) ? surveysForGroup[0].answers.length : 'no answers');
-                    console.log('first survey answers:', surveysForGroup[0].answers);
-                }
-            } catch (e) { console.log('categoryQuestions/answers log error', e); }
-            console.log('Detay modalı çağrıldı:', { grup, categoryName, categoryIndex });
-            // surveysForGroup logunu güvenli yap
-            try {
-                console.log('Filtrelenen surveysForGroup:', surveysForGroup ? surveysForGroup.length : 0, (surveysForGroup && surveysForGroup.length > 0) ? surveysForGroup[0] : undefined);
-            } catch (e) { console.log('survey log error', e); }
-            // answers dizisi eksik veya kısa ise, 5'lik blokta olmayan indexlere erişmeye çalışma
             document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} Detayları`;
             if (!surveysForGroup.length) {
                 document.getElementById('categoryDetailContent').innerHTML = '<div class="text-center text-gray-500 py-8">Bu kategoriye ait yanıt bulunamadı.</div>';
@@ -2868,11 +2896,11 @@ async function toggleCompanyStatus(companyKey) {
                     <thead>
                         <tr class="bg-gray-100">
                             <th class="border px-2 py-2 text-left">Soru</th>
-                            <th class="border px-2 py-2">5</th>
-                            <th class="border px-2 py-2">4</th>
-                            <th class="border px-2 py-2">3</th>
-                            <th class="border px-2 py-2">2</th>
                             <th class="border px-2 py-2">1</th>
+                            <th class="border px-2 py-2">2</th>
+                            <th class="border px-2 py-2">3</th>
+                            <th class="border px-2 py-2">4</th>
+                            <th class="border px-2 py-2">5</th>
                             <th class="border px-2 py-2">Toplam</th>
                         </tr>
                     </thead>
@@ -2881,24 +2909,22 @@ async function toggleCompanyStatus(companyKey) {
                 const counts = [0, 0, 0, 0, 0];
                 surveysForGroup.forEach(s => {
                     if (s.answers && Array.isArray(s.answers)) {
-                        // Sorunun metnine göre answers dizisinde bul
-                        const found = s.answers.find(a => a.question === question);
-                        if (found && found.score >= 1 && found.score <= 5) {
-                            counts[found.score - 1]++;
+                        // Her survey'de, ilgili kategori ve sorunun indexini bul
+                        const answerIdx = startIndex + qIdx;
+                        if (s.answers[answerIdx] && s.answers[answerIdx].score >= 1 && s.answers[answerIdx].score <= 5) {
+                            counts[s.answers[answerIdx].score - 1]++;
                         }
                     }
                 });
-                // counts dizisini 5-4-3-2-1 sırasına çevir
-                const countsReordered = [counts[4], counts[3], counts[2], counts[1], counts[0]];
-                const maxCount = Math.max(...countsReordered);
-                const total = countsReordered.reduce((a, b) => a + b, 0);
+                const maxCount = Math.max(...counts);
+                const total = counts.reduce((a, b) => a + b, 0);
                 detailHTML += `<tr>
-                    <td class=\"border px-2 py-2 text-left\">${question}</td>
-                    ${countsReordered.map((count, idx) => {
+                    <td class="border px-2 py-2 text-left">${question}</td>
+                    ${counts.map((count, idx) => {
                         const isMax = count === maxCount && maxCount > 0;
-                        return `<td class=\"border px-2 py-2 font-semibold${isMax ? ' text-red-600 bg-red-50' : ''}\">${count}</td>`;
+                        return `<td class="border px-2 py-2 font-semibold${isMax ? ' text-red-600 bg-red-50' : ''}">${count}</td>`;
                     }).join('')}
-                    <td class=\"border px-2 py-2 font-bold bg-gray-50\">${total}</td>
+                    <td class="border px-2 py-2 font-bold bg-gray-50">${total}</td>
                 </tr>`;
             });
             detailHTML += `</tbody></table></div>
