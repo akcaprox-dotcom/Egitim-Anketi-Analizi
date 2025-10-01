@@ -1581,7 +1581,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     detayTablo += `<tr>
                         <td class="sub-category flex items-center justify-between">
                             <span>${categoryName}</span>
-                            <button class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs border border-blue-200 hover:bg-blue-200 transition" onclick="showCategoryDetailModal('${grup.replace(/'/g, '')}','${categoryName.replace(/'/g, '')}', ${categoryIndex})">Detay Göster</button>
+                            <button class="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-xs border border-blue-600 hover:bg-blue-600 transition" onclick="showCategoryDetailModal('${grup}','${categoryName}', ${categoryIndex})">📋 Detay</button>
                         </td>`;
                     if (toplamKategoriCevap > 0) {
                         kategoriCounts.forEach(count => {
@@ -1820,6 +1820,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('activeSurveys').textContent = Object.keys(companies).length;
                 document.getElementById('totalUsers').textContent = responses.length;
                 loadCompanyList(responses);
+                
+                // Admin için genel rapor oluştur
+                generateSimpleReport(responses);
             } catch (error) {
                 console.error('Admin dashboard yükleme hatası:', error);
                 showModal('❌ Hata', 'Yönetici paneli yüklenirken hata oluştu.');
@@ -2473,10 +2476,358 @@ async function toggleCompanyStatus(companyKey) {
 
         function loadDemoData() {
             // Demo veri yükleme fonksiyonu
+            if (!window.systemData) window.systemData = {};
+            if (!window.systemData.surveyData) window.systemData.surveyData = {};
+            if (!window.systemData.surveyData.responses) window.systemData.surveyData.responses = {};
+
+            // Örnek anket verileri ekle - Daha fazla veri ile test için
+            const demoSurveys = [
+                {
+                    id: 'demo1',
+                    companyName: 'Demo Okul',
+                    jobType: 'Öğrenci',
+                    firstName: 'Ahmet',
+                    lastName: 'Yılmaz',
+                    answers: [
+                        { score: 4, timestamp: '2023-10-01T10:00:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:01:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:02:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:03:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:04:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:05:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:06:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:07:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:08:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:09:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:10:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:11:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:12:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:13:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:14:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:15:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:16:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:17:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:18:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:19:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:20:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:21:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:22:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:23:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:24:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:25:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:26:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:27:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:28:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:29:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:30:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:31:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:32:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:33:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:34:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:35:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:36:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:37:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:38:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:39:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:40:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:41:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:42:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:43:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:44:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:45:00Z' },
+                        { score: 3, timestamp: '2023-10-01T10:46:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:47:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:48:00Z' },
+                        { score: 4, timestamp: '2023-10-01T10:49:00Z' },
+                        { score: 5, timestamp: '2023-10-01T10:50:00Z' }
+                    ],
+                    totalScore: 200,
+                    averageScore: 4.0,
+                    duration: '10:30'
+                },
+                {
+                    id: 'demo2',
+                    companyName: 'Demo Okul',
+                    jobType: 'Öğrenci',
+                    firstName: 'Ayşe',
+                    lastName: 'Kaya',
+                    answers: [
+                        { score: 3, timestamp: '2023-10-02T10:00:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:01:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:02:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:03:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:04:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:05:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:06:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:07:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:08:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:09:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:10:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:11:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:12:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:13:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:14:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:15:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:16:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:17:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:18:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:19:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:20:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:21:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:22:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:23:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:24:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:25:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:26:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:27:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:28:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:29:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:30:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:31:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:32:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:33:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:34:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:35:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:36:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:37:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:38:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:39:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:40:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:41:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:42:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:43:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:44:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:45:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:46:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:47:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:48:00Z' },
+                        { score: 3, timestamp: '2023-10-02T10:49:00Z' },
+                        { score: 4, timestamp: '2023-10-02T10:50:00Z' }
+                    ],
+                    totalScore: 175,
+                    averageScore: 3.5,
+                    duration: '9:15'
+                },
+                {
+                    id: 'demo3',
+                    companyName: 'Demo Okul',
+                    jobType: 'Öğrenci',
+                    firstName: 'Mehmet',
+                    lastName: 'Demir',
+                    answers: [
+                        { score: 5, timestamp: '2023-10-03T10:00:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:01:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:02:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:03:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:04:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:05:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:06:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:07:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:08:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:09:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:10:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:11:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:12:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:13:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:14:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:15:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:16:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:17:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:18:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:19:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:20:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:21:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:22:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:23:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:24:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:25:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:26:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:27:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:28:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:29:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:30:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:31:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:32:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:33:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:34:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:35:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:36:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:37:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:38:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:39:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:40:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:41:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:42:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:43:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:44:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:45:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:46:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:47:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:48:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:49:00Z' },
+                        { score: 5, timestamp: '2023-10-03T10:50:00Z' }
+                    ],
+                    totalScore: 250,
+                    averageScore: 5.0,
+                    duration: '12:00'
+                },
+                {
+                    id: 'demo2',
+                    companyName: 'Demo Okul',
+                    jobType: 'Öğretmen',
+                    firstName: 'Ayşe',
+                    lastName: 'Kara',
+                    answers: [
+                        { score: 5, timestamp: '2023-10-01T11:00:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:01:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:02:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:03:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:04:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:05:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:06:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:07:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:08:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:09:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:10:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:11:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:12:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:13:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:14:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:15:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:16:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:17:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:18:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:19:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:20:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:21:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:22:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:23:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:24:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:25:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:26:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:27:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:28:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:29:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:30:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:31:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:32:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:33:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:34:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:35:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:36:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:37:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:38:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:39:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:40:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:41:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:42:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:43:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:44:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:45:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:46:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:47:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:48:00Z' },
+                        { score: 4, timestamp: '2023-10-01T11:49:00Z' },
+                        { score: 5, timestamp: '2023-10-01T11:50:00Z' }
+                    ],
+                    totalScore: 225,
+                    averageScore: 4.5,
+                    duration: '12:00'
+                },
+                {
+                    id: 'demo3',
+                    companyName: 'Demo Okul',
+                    jobType: 'Veli/Ebeveyn',
+                    firstName: 'Mehmet',
+                    lastName: 'Demir',
+                    answers: [
+                        { score: 3, timestamp: '2023-10-01T12:00:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:01:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:02:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:03:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:04:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:05:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:06:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:07:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:08:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:09:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:10:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:11:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:12:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:13:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:14:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:15:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:16:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:17:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:18:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:19:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:20:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:21:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:22:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:23:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:24:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:25:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:26:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:27:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:28:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:29:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:30:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:31:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:32:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:33:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:34:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:35:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:36:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:37:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:38:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:39:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:40:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:41:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:42:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:43:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:44:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:45:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:46:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:47:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:48:00Z' },
+                        { score: 4, timestamp: '2023-10-01T12:49:00Z' },
+                        { score: 3, timestamp: '2023-10-01T12:50:00Z' }
+                    ],
+                    totalScore: 175,
+                    averageScore: 3.5,
+                    duration: '8:45'
+                }
+            ];
+
+            demoSurveys.forEach(survey => {
+                window.systemData.surveyData.responses[survey.id] = survey;
+            });
+
+            console.log('Demo veriler yüklendi:', Object.keys(window.systemData.surveyData.responses).length, 'anket');
         }
 
         // Kategori detay modalı: Her şık için işaretlenme sayısı ve en çok işaretlenenin kırmızı gösterimi
         function showCategoryDetailModal(grup, categoryName, categoryIndex) {
+            // Kategori sorularını ve ilk survey'in answers dizisini logla
+            try {
+                const groupKey = Object.keys(questions).find(qk => qk.toLowerCase() === (grup || '').toLowerCase());
+                const groupQuestions = questions[groupKey];
+                const startIndex = categoryIndex * 5;
+                const endIndex = startIndex + 5;
+                const categoryQuestions = groupQuestions ? groupQuestions.slice(startIndex, endIndex) : [];
+                console.log('categoryQuestions:', categoryQuestions);
+                if (surveysForGroup && surveysForGroup.length > 0) {
+                    console.log('first survey answers length:', Array.isArray(surveysForGroup[0].answers) ? surveysForGroup[0].answers.length : 'no answers');
+                    console.log('first survey answers:', surveysForGroup[0].answers);
+                }
+            } catch (e) { console.log('categoryQuestions/answers log error', e); }
+            console.log('Detay modalı çağrıldı:', { grup, categoryName, categoryIndex });
+            // Survey verilerini bul
+            // ...existing code...
+            // surveysForGroup logunu güvenli yap
+            try {
+                console.log('Filtrelenen surveysForGroup:', surveysForGroup ? surveysForGroup.length : 0, (surveysForGroup && surveysForGroup.length > 0) ? surveysForGroup[0] : undefined);
+            } catch (e) { console.log('survey log error', e); }
             // Survey verilerini bul
             let allSurveys = [];
             if (typeof filteredSurveys !== 'undefined' && filteredSurveys !== null) {
@@ -2487,59 +2838,66 @@ async function toggleCompanyStatus(companyKey) {
                 allSurveys = surveys;
             }
             // Sadece ilgili gruba ait anketler
-            const surveysForGroup = allSurveys.filter(s => s.jobType === grup);
+            // Grup adı karşılaştırmasını küçük harfe çevirerek yap
+            const groupKey = Object.keys(questions).find(qk => qk.toLowerCase() === (grup || '').toLowerCase());
+            const surveysForGroup = allSurveys.filter(s => (s.jobType || '').toLowerCase() === (grup || '').toLowerCase());
+            // answers dizisi eksik veya kısa ise, 5'lik blokta olmayan indexlere erişmeye çalışma
+            document.getElementById('categoryDetailTitle').textContent = `📋 ${categoryName} Detayları`;
             if (!surveysForGroup.length) {
                 document.getElementById('categoryDetailContent').innerHTML = '<div class="text-center text-gray-500 py-8">Bu kategoriye ait yanıt bulunamadı.</div>';
                 document.getElementById('categoryDetailModal').classList.add('show');
                 return;
             }
             // Soru setini doğrudan al
-            const groupQuestions = questions[grup];
+            const groupQuestions = questions[groupKey];
             if (!groupQuestions) return;
             // Her kategori 5 soru
             const startIndex = categoryIndex * 5;
             const endIndex = startIndex + 5;
             const categoryQuestions = groupQuestions.slice(startIndex, endIndex);
-            let detailHTML = `<div class=\"overflow-x-auto\">
-        <table class=\"min-w-full text-xs border border-gray-300\">
-            <thead>
-                <tr class=\"bg-gray-100\">
-                    <th class=\"px-2 py-2 border\">Soru</th>
-                    <th class=\"px-2 py-2 border\">Hiç Memnun Değilim</th>
-                    <th class=\"px-2 py-2 border\">Memnun Değilim</th>
-                    <th class=\"px-2 py-2 border\">Kararsızım</th>
-                    <th class=\"px-2 py-2 border\">Memnunum</th>
-                    <th class=\"px-2 py-2 border\">Çok Memnunum</th>
-                    <th class=\"px-2 py-2 border\">Toplam</th>
-                </tr>
-            </thead>
-            <tbody>`;
-    categoryQuestions.forEach((question, qIdx) => {
-        const counts = [0, 0, 0, 0, 0];
-        surveysForGroup.forEach(s => {
-            if (s.answers && Array.isArray(s.answers)) {
-                const answerObj = s.answers[startIndex + qIdx];
-                if (answerObj && typeof answerObj.score === 'number' && answerObj.score >= 1 && answerObj.score <= 5) {
-                    counts[answerObj.score - 1]++;
-                }
-            }
-        });
-        const maxCount = Math.max(...counts);
-        const total = counts.reduce((a, b) => a + b, 0);
-        detailHTML += `<tr>
-            <td class=\"border px-2 py-2 text-left\">${question}</td>
-            ${counts.map((count, idx) => {
-                const isMax = count === maxCount && maxCount > 0;
-                return `<td class=\"border px-2 py-2 font-semibold${isMax ? ' text-red-600 bg-red-50' : ''}\">${count}</td>`;
-            }).join('')}
-            <td class=\"border px-2 py-2 font-bold bg-gray-50\">${total}</td>
-        </tr>`;
-    });
-    detailHTML += `</tbody></table></div>
-    <div class=\"text-xs text-gray-500 mt-2\">En çok işaretlenen şık kırmızı renkte gösterilir. Toplam sütunu, o soruya verilen toplam yanıt sayısıdır.</div>`;
-    document.getElementById('categoryDetailContent').innerHTML = detailHTML;
-    document.getElementById('categoryDetailModal').classList.add('show');
-}
+            let detailHTML = `<div class="overflow-x-auto">
+                <table class="min-w-full text-xs border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border px-2 py-2 text-left">Soru</th>
+                            <th class="border px-2 py-2">5</th>
+                            <th class="border px-2 py-2">4</th>
+                            <th class="border px-2 py-2">3</th>
+                            <th class="border px-2 py-2">2</th>
+                            <th class="border px-2 py-2">1</th>
+                            <th class="border px-2 py-2">Toplam</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            categoryQuestions.forEach((question, qIdx) => {
+                const counts = [0, 0, 0, 0, 0];
+                surveysForGroup.forEach(s => {
+                    if (s.answers && Array.isArray(s.answers)) {
+                        // Sorunun metnine göre answers dizisinde bul
+                        const found = s.answers.find(a => a.question === question);
+                        if (found && found.score >= 1 && found.score <= 5) {
+                            counts[found.score - 1]++;
+                        }
+                    }
+                });
+                // counts dizisini 5-4-3-2-1 sırasına çevir
+                const countsReordered = [counts[4], counts[3], counts[2], counts[1], counts[0]];
+                const maxCount = Math.max(...countsReordered);
+                const total = countsReordered.reduce((a, b) => a + b, 0);
+                detailHTML += `<tr>
+                    <td class=\"border px-2 py-2 text-left\">${question}</td>
+                    ${countsReordered.map((count, idx) => {
+                        const isMax = count === maxCount && maxCount > 0;
+                        return `<td class=\"border px-2 py-2 font-semibold${isMax ? ' text-red-600 bg-red-50' : ''}\">${count}</td>`;
+                    }).join('')}
+                    <td class=\"border px-2 py-2 font-bold bg-gray-50\">${total}</td>
+                </tr>`;
+            });
+            detailHTML += `</tbody></table></div>
+            <div class="text-xs text-gray-500 mt-2">En çok işaretlenen şık kırmızı renkte gösterilir. Toplam sütunu, o soruya verilen toplam yanıt sayısıdır.</div>`;
+            document.getElementById('categoryDetailContent').innerHTML = detailHTML;
+            document.getElementById('categoryDetailModal').classList.add('show');
+        }
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'981af265f22bd620',t:'MTc1ODMwNDQ1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
