@@ -433,16 +433,16 @@
     </div>
 
     <script>
-// Firebase config ve Google Sign-In logic - EĞİTİM PROJESİ için tam yapılandırma
+// Firebase config ve Google Sign-In logic - EĞİTİM PROJESİ için DOĞRU yapılandırma
 const firebaseConfig = {
-    apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg", // Eğitim projesi API key'i gerekebilir
+    apiKey: "AIzaSyAphdiL8wKZbzr5DOuN__RsQJRUatDxbWo",
     authDomain: "egitim-37c53.firebaseapp.com",
+    databaseURL: "https://egitim-37c53-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "egitim-37c53",
-    storageBucket: "egitim-37c53.appspot.com",
-    messagingSenderId: "426135179922", // Eğitim projesi sender ID'si gerekebilir
-    appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b", // Eğitim projesi app ID'si gerekebilir
-    measurementId: "G-CD1ET7RGX1",
-    databaseURL: "https://egitim-37c53-default-rtdb.europe-west1.firebasedatabase.app"
+    storageBucket: "egitim-37c53.firebasestorage.app",
+    messagingSenderId: "596337127284",
+    appId: "1:596337127284:web:0eee13cd72db5e3a85c621",
+    measurementId: "G-8EM1GSE7FJ"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
