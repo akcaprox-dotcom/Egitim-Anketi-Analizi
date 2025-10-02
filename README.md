@@ -2583,10 +2583,89 @@ async function toggleCompanyStatus(companyKey) {
                                 ${evaluation}
                             </span>
                         </td>
-                        <td class="px-3 py-2 text-center text-sm text-gray-600">${new Date(survey.submittedAt).toLocaleDateString('tr-TR')}</td>
+                        <td class="px-3 py-2 text-center text-sm text-gray-600">
+                            <div>${new Date(survey.submittedAt).toLocaleDateString('tr-TR')}</div>
+                            <button type="button" onclick="showParticipantAnswers('${survey.id}')" class="mt-1 inline-flex items-center gap-1 px-2 py-1 rounded bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium shadow focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1">
+                                📋 Sorular
+                            </button>
+                        </td>
                     </tr>
                 `;
             }).join('');
+        }
+
+        // Katılımcının tüm soru & cevaplarını modalda göster
+        function showParticipantAnswers(surveyId) {
+            try {
+                if (!systemData || !systemData.surveyData || !systemData.surveyData.responses) {
+                    showModal('Veri Yok', 'Sistem verisi henüz yüklenmemiş.');
+                    return;
+                }
+                // Response bul
+                let survey = systemData.surveyData.responses[surveyId];
+                if (!survey) {
+                    // Olası obje yerine array durumu için fallback
+                    const all = Object.values(systemData.surveyData.responses);
+                    survey = all.find(r => r.id === surveyId);
+                }
+                if (!survey) {
+                    showModal('Bulunamadı', 'İlgili anket cevabı bulunamadı.');
+                    return;
+                }
+                const qSet = questions[survey.jobType];
+                if (!qSet) {
+                    showModal('Soru Seti Yok', survey.jobType + ' için soru seti bulunamadı.');
+                    return;
+                }
+                const answersArr = Array.isArray(survey.answers) ? survey.answers : [];
+                const likertMap = {
+                    1: '1 - Kesinlikle Katılmıyorum',
+                    2: '2 - Katılmıyorum',
+                    3: '3 - Kararsızım',
+                    4: '4 - Katılıyorum',
+                    5: '5 - Kesinlikle Katılıyorum'
+                };
+                const rowsHtml = qSet.map((q, idx) => {
+                    const ansObj = answersArr[idx];
+                    const rawScore = ansObj && (ansObj.score || ansObj.score === 0) ? ansObj.score : null;
+                    const scoreText = rawScore ? (likertMap[rawScore] || rawScore) : '<span class="text-gray-400">Cevaplanmamış</span>';
+                    return `
+                        <tr class="border-b last:border-b-0 hover:bg-gray-50">
+                            <td class="p-2 align-top text-xs md:text-sm font-medium text-gray-700 w-10">${idx + 1}</td>
+                            <td class="p-2 align-top text-xs md:text-sm text-gray-800">${q}</td>
+                            <td class="p-2 align-top text-xs md:text-sm font-semibold">${scoreText}</td>
+                        </tr>`;
+                }).join('');
+                const summary = `Toplam Soru: ${qSet.length} | Yanıtlanan: ${answersArr.filter(a => a && (a.score || a.score === 0)).length} | Ortalama: ${survey.averageScore}`;
+                const contentHtml = `
+                    <div class="mb-3 text-sm text-gray-600">${summary}</div>
+                    <div class="max-h-[60vh] overflow-y-auto border rounded">
+                        <table class="min-w-full text-left text-xs md:text-sm">
+                            <thead class="bg-gray-100 sticky top-0 text-gray-700">
+                                <tr>
+                                    <th class="p-2 w-10">#</th>
+                                    <th class="p-2">Soru</th>
+                                    <th class="p-2 w-40">Cevap</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2 text-[10px] md:text-xs text-gray-500">
+                        <span class="px-2 py-1 bg-gray-100 rounded">1=Kesinlikle Katılmıyorum</span>
+                        <span class="px-2 py-1 bg-gray-100 rounded">5=Kesinlikle Katılıyorum</span>
+                    </div>
+                `;
+                const title = `Katılımcı Yanıtları - ${(survey.firstName || '') + ' ' + (survey.lastName || '')} (${survey.jobType})`;
+                if (typeof showModal === 'function') {
+                    showModal(title, contentHtml);
+                } else {
+                    alert('Modal fonksiyonu bulunamadı.');
+                }
+            } catch (e) {
+                console.error('showParticipantAnswers hata', e);
+                showModal('Hata', 'Yanıtlar yüklenirken bir sorun oluştu.');
+            }
         }
 
         function loadDemoData() {
