@@ -419,9 +419,9 @@
 // Firebase config ve Google Sign-In logic - Güvenlik kuralları güncellemesi için Auth entegrasyonu
 const firebaseConfig = {
     apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
-    authDomain: "akcaprox-anket.firebaseapp.com",
-    projectId: "akcaprox-anket",
-    storageBucket: "akcaprox-anket.appspot.com",
+    authDomain: "egitim-37c53.firebaseapp.com",
+    projectId: "egitim-37c53",
+    storageBucket: "egitim-37c53.appspot.com",
     messagingSenderId: "426135179922",
     appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b",
     measurementId: "G-CD1ET7RGX1",
@@ -1098,15 +1098,32 @@ document.addEventListener('DOMContentLoaded', function() {
         async function getFirebaseAuthToken() {
             return new Promise((resolve, reject) => {
                 const user = firebase.auth().currentUser;
+                console.log('Auth kontrol - Mevcut kullanıcı:', user ? user.email : 'null');
                 if (user) {
-                    user.getIdToken().then(resolve).catch(reject);
+                    console.log('Token alınıyor...');
+                    user.getIdToken().then(token => {
+                        console.log('Token başarıyla alındı:', token.substring(0, 50) + '...');
+                        resolve(token);
+                    }).catch(error => {
+                        console.error('Token alma hatası:', error);
+                        reject(error);
+                    });
                 } else {
                     // Kullanıcı giriş yapmamışsa auth state değişimini bekle
+                    console.log('Kullanıcı giriş yapmamış, auth state değişimi bekleniyor...');
                     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
                         unsubscribe();
                         if (user) {
-                            user.getIdToken().then(resolve).catch(reject);
+                            console.log('Auth state değişti, token alınıyor...');
+                            user.getIdToken().then(token => {
+                                console.log('Token başarıyla alındı:', token.substring(0, 50) + '...');
+                                resolve(token);
+                            }).catch(error => {
+                                console.error('Token alma hatası:', error);
+                                reject(error);
+                            });
                         } else {
+                            console.error('Auth state değişti ama kullanıcı hala null');
                             reject(new Error('Kullanıcı giriş yapmamış - Firebase erişimi için Google ile giriş yapın'));
                         }
                     });
@@ -1117,15 +1134,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Firebase'den verileri yükle (Auth token ile - güvenlik kuralları: auth != null)
         async function loadFromFirebase() {
             try {
+                console.log('Firebase veri yükleme başlıyor...');
                 // Firebase Auth token'ını güvenli şekilde al
                 const token = await getFirebaseAuthToken();
                 const url = `${FIREBASE_DB_URL}/surveyData.json?auth=${token}`;
+                console.log('Firebase URL:', FIREBASE_DB_URL);
+                console.log('İstek gönderiliyor...');
                 
                 const response = await fetch(url);
+                console.log('Firebase response status:', response.status);
                 if (!response.ok) {
                     throw new Error(`Firebase HTTP hatası: ${response.status} - ${response.statusText}`);
                 }
                 const data = await response.json();
+                console.log('Firebase veri başarıyla yüklendi');
                 systemData.surveyData = data || {
                     surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
                     createdAt: new Date().toISOString(),
@@ -1163,18 +1185,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Firebase'e PATCH ile veri kaydet (responses nesnesi olarak) - Auth token ile
         async function saveToFirebase(patchObj) {
             try {
+                console.log('Firebase veri kaydetme başlıyor...');
                 // Firebase Auth token'ını güvenli şekilde al
                 const token = await getFirebaseAuthToken();
                 const url = `${FIREBASE_DB_URL}/surveyData.json?auth=${token}`;
+                console.log('Firebase kayıt URL:', FIREBASE_DB_URL);
+                console.log('Kaydet isteği gönderiliyor...');
                 
                 const response = await fetch(url, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(patchObj)
                 });
+                console.log('Firebase kayıt response status:', response.status);
                 if (!response.ok) {
                     throw new Error(`Firebase HTTP hatası: ${response.status} - ${response.statusText}`);
                 }
+                console.log('Firebase veri başarıyla kaydedildi');
                 return { success: true };
             } catch (error) {
                 console.error('Firebase kayıt hatası:', error);
