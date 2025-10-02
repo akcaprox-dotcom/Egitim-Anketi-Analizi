@@ -416,7 +416,7 @@
     </div>
 
     <script>
-// Firebase config ve Google Sign-In logic (hastane.html ile aynı)
+// Firebase config ve Google Sign-In logic - Güvenlik kuralları güncellemesi için Auth entegrasyonu
 const firebaseConfig = {
     apiKey: "AIzaSyDp2Yh8hamXi6OTfw03MT0S4rp5CjnlAcg",
     authDomain: "akcaprox-anket.firebaseapp.com",
@@ -424,7 +424,8 @@ const firebaseConfig = {
     storageBucket: "akcaprox-anket.appspot.com",
     messagingSenderId: "426135179922",
     appId: "1:426135179922:web:c16b3fd6fa5f3d9224cc4b",
-    measurementId: "G-CD1ET7RGX1"
+    measurementId: "G-CD1ET7RGX1",
+    databaseURL: "https://egitim-37c53-default-rtdb.europe-west1.firebasedatabase.app"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -1076,10 +1077,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-        // Firebase'den verileri yükle
+        // Firebase'den verileri yükle (Auth token ile - güvenlik kuralları: auth != null)
         async function loadFromFirebase() {
             try {
-                const response = await fetch(`${FIREBASE_DB_URL}/surveyData.json`);
+                // Firebase Auth token'ını al
+                let url = `${FIREBASE_DB_URL}/surveyData.json`;
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    const token = await user.getIdToken();
+                    url += `?auth=${token}`;
+                }
+                
+                const response = await fetch(url);
                 if (!response.ok) throw new Error('Firebase veri yükleme hatası');
                 const data = await response.json();
                 systemData.surveyData = data || {
@@ -1112,10 +1121,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Firebase'e PATCH ile veri kaydet (responses nesnesi olarak)
+        // Firebase'e PATCH ile veri kaydet (responses nesnesi olarak) - Auth token ile
         async function saveToFirebase(patchObj) {
             try {
-                const response = await fetch(`${FIREBASE_DB_URL}/surveyData.json`, {
+                // Firebase Auth token'ını al
+                let url = `${FIREBASE_DB_URL}/surveyData.json`;
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    const token = await user.getIdToken();
+                    url += `?auth=${token}`;
+                }
+                
+                const response = await fetch(url, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(patchObj)
