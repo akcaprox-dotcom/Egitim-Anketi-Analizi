@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Akça Pro X - Kurum Değerlendirme Anketi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?production=false"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -470,6 +470,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         userInfoDiv.classList.remove('hidden');
                         document.getElementById('firstName').readOnly = false;
                         document.getElementById('lastName').readOnly = false;
+                        
+                        // Google ile giriş başarılı olduktan sonra kurumları yükle
+                        if (userTypeExisting && userTypeExisting.checked) {
+                            loadExistingCompanies();
+                        }
                     }
                 })
                 .catch((error) => {
@@ -502,30 +507,42 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadExistingCompanies() {
-        // Firebase'den kurumları çek
-        if (!window.systemData || !window.systemData.surveyData) {
-            window.systemData = window.systemData || {};
-            window.systemData.surveyData = await loadFromFirebase();
-        }
-        const companies = (window.systemData.surveyData && window.systemData.surveyData.companies) || {};
-        existingCompanySelect.innerHTML = '<option value="">Kayıtlı kurum seçin...</option>';
-        
-        // Kurumları alfabetik sıraya göre sırala
-        const sortedCompanies = Object.values(companies).sort((a, b) => {
-            return a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' });
-        });
-        
-        sortedCompanies.forEach(company => {
-            existingCompanySelect.innerHTML += `<option value="${company.name}">${company.name}</option>`;
-        });
-        
-        // Dropdown'dan seçim yapıldığında company name input'una aktarma
-        existingCompanySelect.addEventListener('change', function() {
-            const companyNameInput = document.getElementById('companyName');
-            if (companyNameInput && this.value) {
-                companyNameInput.value = this.value;
+        try {
+            // Önce kullanıcının giriş yapmış olduğunu kontrol et
+            if (!googleUser) {
+                console.log('Google ile giriş yapılmamış, kurum listesi yüklenemiyor');
+                existingCompanySelect.innerHTML = '<option value="">Önce Google ile giriş yapın...</option>';
+                return;
             }
-        });
+            
+            // Firebase'den kurumları çek
+            if (!window.systemData || !window.systemData.surveyData) {
+                window.systemData = window.systemData || {};
+                window.systemData.surveyData = await loadFromFirebase();
+            }
+            const companies = (window.systemData.surveyData && window.systemData.surveyData.companies) || {};
+            existingCompanySelect.innerHTML = '<option value="">Kayıtlı kurum seçin...</option>';
+            
+            // Kurumları alfabetik sıraya göre sırala
+            const sortedCompanies = Object.values(companies).sort((a, b) => {
+                return a.name.localeCompare(b.name, 'tr', { sensitivity: 'base' });
+            });
+            
+            sortedCompanies.forEach(company => {
+                existingCompanySelect.innerHTML += `<option value="${company.name}">${company.name}</option>`;
+            });
+            
+            // Dropdown'dan seçim yapıldığında company name input'una aktarma
+            existingCompanySelect.addEventListener('change', function() {
+                const companyNameInput = document.getElementById('companyName');
+                if (companyNameInput && this.value) {
+                    companyNameInput.value = this.value;
+                }
+            });
+        } catch (error) {
+            console.error('Kurum listesi yükleme hatası:', error);
+            existingCompanySelect.innerHTML = '<option value="">Kurum listesi yüklenemedi - Google ile giriş yapın</option>';
+        }
     }
 
     // (startBtn event listener'ı yukarıda tanımlandı, burada tekrar tanımlamaya gerek yok)
@@ -1077,19 +1094,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+        // Firebase Auth token'ını güvenli şekilde al
+        async function getFirebaseAuthToken() {
+            return new Promise((resolve, reject) => {
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    user.getIdToken().then(resolve).catch(reject);
+                } else {
+                    // Kullanıcı giriş yapmamışsa auth state değişimini bekle
+                    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                        unsubscribe();
+                        if (user) {
+                            user.getIdToken().then(resolve).catch(reject);
+                        } else {
+                            reject(new Error('Kullanıcı giriş yapmamış - Firebase erişimi için Google ile giriş yapın'));
+                        }
+                    });
+                }
+            });
+        }
+
         // Firebase'den verileri yükle (Auth token ile - güvenlik kuralları: auth != null)
         async function loadFromFirebase() {
             try {
-                // Firebase Auth token'ını al
-                let url = `${FIREBASE_DB_URL}/surveyData.json`;
-                const user = firebase.auth().currentUser;
-                if (user) {
-                    const token = await user.getIdToken();
-                    url += `?auth=${token}`;
-                }
+                // Firebase Auth token'ını güvenli şekilde al
+                const token = await getFirebaseAuthToken();
+                const url = `${FIREBASE_DB_URL}/surveyData.json?auth=${token}`;
                 
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('Firebase veri yükleme hatası');
+                if (!response.ok) {
+                    throw new Error(`Firebase HTTP hatası: ${response.status} - ${response.statusText}`);
+                }
                 const data = await response.json();
                 systemData.surveyData = data || {
                     surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
@@ -1105,6 +1140,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 return systemData.surveyData;
             } catch (error) {
                 console.error('Firebase yükleme hatası:', error);
+                // Auth hatası durumunda kullanıcıyı bilgilendir
+                if (error.message.includes('giriş yapmamış')) {
+                    showModal('🔒 Giriş Gerekli', 'Firebase veritabanına erişim için Google ile giriş yapmanız gerekiyor.');
+                }
                 const defaultData = {
                     surveyName: "Kurum Değerlendirme Anketi - Sürüm 12",
                     createdAt: new Date().toISOString(),
@@ -1124,23 +1163,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // Firebase'e PATCH ile veri kaydet (responses nesnesi olarak) - Auth token ile
         async function saveToFirebase(patchObj) {
             try {
-                // Firebase Auth token'ını al
-                let url = `${FIREBASE_DB_URL}/surveyData.json`;
-                const user = firebase.auth().currentUser;
-                if (user) {
-                    const token = await user.getIdToken();
-                    url += `?auth=${token}`;
-                }
+                // Firebase Auth token'ını güvenli şekilde al
+                const token = await getFirebaseAuthToken();
+                const url = `${FIREBASE_DB_URL}/surveyData.json?auth=${token}`;
                 
                 const response = await fetch(url, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(patchObj)
                 });
-                if (!response.ok) throw new Error('Firebase veri kaydetme hatası');
+                if (!response.ok) {
+                    throw new Error(`Firebase HTTP hatası: ${response.status} - ${response.statusText}`);
+                }
                 return { success: true };
             } catch (error) {
                 console.error('Firebase kayıt hatası:', error);
+                // Auth hatası durumunda kullanıcıyı bilgilendir
+                if (error.message.includes('giriş yapmamış')) {
+                    showModal('🔒 Giriş Gerekli', 'Firebase veritabanına kayıt için Google ile giriş yapmanız gerekiyor.');
+                }
                 return { success: false, error: error.message };
             }
         }
